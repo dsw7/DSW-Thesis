@@ -28,10 +28,10 @@ import numpy as np
 
 STRUCT = 0
 CHAIN = 'A'
-ATOMS_MET = 'CE|SD|CG'  # see line 10: Algorithm 1 Met-aromatic
-ATOMS_TYR = 'CD1|CE1|CZ|CG|CD2|CE2'   # see line 12: Algorithm 1 Met-aromatic
-ATOMS_TRP = 'CD2|CE3|CZ2|CH2|CZ3|CE2'  # see line 14: Algorithm 1 Met-aromatic
-ATOMS_PHE = 'CD1|CE1|CZ|CG|CD2|CE2'   # see line 12: Algorithm 1 Met-aromatic
+ATOMS_MET = 'CE|SD|CG'  
+ATOMS_TYR = 'CD1|CE1|CZ|CG|CD2|CE2'   
+ATOMS_TRP = 'CD2|CE3|CZ2|CH2|CZ3|CE2' 
+ATOMS_PHE = 'CD1|CE1|CZ|CG|CD2|CE2'   
 LIST_ATOMS_TYR = ['CG', 'CD2', 'CE2', 'CZ', 'CE1', 'CD1']
 LIST_ATOMS_TRP = ['CD2', 'CE3', 'CZ3', 'CH2', 'CZ2', 'CE2']
 LIST_ATOMS_PHE = ['CG', 'CD2', 'CE2', 'CZ', 'CE1', 'CD1']
