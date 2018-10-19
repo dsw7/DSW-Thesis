@@ -10,8 +10,8 @@ algorithm from the overhead and match the script as best I could to
 """
 
 PDB_CODE = '1rcy'  # input the PDB code of interest
-D_C = 6.0  # this is the distance cutoff for the distance condition (2.3)
-A_C = 109.5  # this is the angular cutoff for the angular condition (2.4)
+D_C = 6.0          # this is the distance cutoff (Angstroms) for the distance condition 
+A_C = 109.5        # this is the angular cutoff (degrees) for the angular condition 
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
