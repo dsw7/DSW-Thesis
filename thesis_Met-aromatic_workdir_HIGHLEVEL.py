@@ -3,10 +3,9 @@ Written by: David S. Weber -
 
 This script applies the Met-aromatic algorithm to a Protein Data Bank
 entry of choosing, PDB_CODE. I wrote this script mainly for the completion
-of my thesis to include in the code section. I feel that this is, to date,
-my most elegant work. I also tried to cleanly separate the Met-aromatic
-algorithm from the overhead and match the script as best I could to 
-'Algorithm 1 Met-aromatic' in my thesis.
+of my thesis to include in the code section. I tried to cleanly separate 
+the Met-aromatic algorithm from the overhead and match the script as best 
+I could to my thesis.
 """
 
 PDB_CODE = '1rcy'  # input the PDB code of interest
