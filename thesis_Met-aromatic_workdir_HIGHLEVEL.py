@@ -6,6 +6,17 @@ entry of choosing, PDB_CODE. I wrote this script mainly for the completion
 of my thesis to include in the code section. I tried to cleanly separate 
 the Met-aromatic algorithm from the overhead and match the script as best 
 I could to my thesis.
+
+To use the high level Pandas/BioPython script:
+
+(1) Open the main.py script in a Python editor.
+(2) Input the PDB code of interest by assigning the PDB code to PDB_CODE.
+(3) Input the cutoff distance by assigning the distance (in Angstroms) to D_C.
+(4) Input the cutoff angle by assigning the angle (in degrees) to A_C.
+(5) Run in a Python editor of choosing. 
+    Note that paths to dependencies may need to be specified using sys.path.append() (or through editor preferences)
+    
+WARNING! This script does not pass AMET, BMET, CMET labelled methionine coordinates!
 """
 
 PDB_CODE = '1rcy'  # input the PDB code of interest
