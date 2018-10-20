@@ -6,7 +6,7 @@ all scripts are written according to the documentation for their respective hard
 I have also made sure that all scripts work standalone such that future lab members
 can replicate their execution.
 
-~/thesis_SerialIO/serial_CompuScope.m // scope
-~/thesis_SerialIO/serial_DK240.m // monochromator
-~/thesis_SerialIO/serial_NI_USB_6008.m // shutters
-~/thesis_SerialIO/serial_QC9514.m // digital delay generator
+~/thesis_SerialIO/serial_CompuScope.m   // scope
+~/thesis_SerialIO/serial_DK240.m        // monochromator
+~/thesis_SerialIO/serial_NI_USB_6008.m  // shutters
+~/thesis_SerialIO/serial_QC9514.m       // digital delay generator
