@@ -1,3 +1,10 @@
+"""
+Here I demonstrate how to assess the relationship between networks using
+the NetworkX library. More specifically, I am comparing whether nodes
+in one network for one edge type are shared in another network whose
+edges are of a different identity.
+"""
+
 import networkx as nx
 from numpy import diag, linalg
 
@@ -99,32 +106,3 @@ NULLITY = DIM - RANK
 D = diag(A1 * A2)
 print('Pseudomembership: ', D, 'Nullity: ', NULLITY)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import pandas as pd
-import os
-
-j = os.listdir(os.getcwd())
-
-j = [i for i in j if os.path.splitext(i)[1] == '.ent']
