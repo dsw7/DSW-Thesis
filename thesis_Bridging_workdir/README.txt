@@ -1,7 +1,5 @@
 * David *
 
-TODO: replace with both a high level and low level implementation?
-
 This folder contains an elegant implementation of the Met-aromatic algorithm but we go
 one step further: here we compute the bridging interaction.
 
