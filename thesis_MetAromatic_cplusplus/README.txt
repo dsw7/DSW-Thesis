@@ -1,6 +1,6 @@
 * David *
 
 A working C++ implementation of the Met-aromatic algorithm.
-I intend on wrapping this in Python and calling main() as an external.
-This script assumes that a PDB file is in pwd which would be done
-by taking advantage of Python's urllib.request lib.
+I might interface this with Python to take advantage of
+urllib.request() for fetching PDB files over FTP, vs. using
+something like libcurl in C++.
