@@ -1,3 +1,5 @@
+/* example usage of cpp Met-aromatic wrapper */
+
 #include "ma.h"
 
 int main(int argc, char* argv[])
