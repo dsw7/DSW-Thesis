@@ -49,15 +49,15 @@ def get_XYZ_file(input_list, file_name):
                                ['N',1.00,2.00,1.00],
                                ['H',1.00,4.00,1.00], ...
                               ]
-                 file_name, name of export file.
+                 file_name, name of export file (i.e. "data.xyz")
     
     The script generates:
         xyz_data.xyz
     """
-    file = open(file_name + '.xyz', 'w')   
+    file = open(file_name, 'w')   
     file.write(str(len(input_list)) + '\n')
     file.write('PDBFileDriver generated XYZ file\n')    
-    for i in range(0, len(input_list)):
+    for i in input_list:
         string = ' {} {} {} {} \n'.format(*i)
         file.write(string)
     file.close()
