@@ -30,7 +30,7 @@ def get_XYZ_file(input_list, file_name):
     
     
 # *******************************************************************
-# example - here I export a set of (x,y) benzene coordinates
+# example - here I export a set of (x, y, 0) benzene coordinates
 
 coords_C6H6 = [
   ['C',        0.00000,        1.40272,        0.00000],
