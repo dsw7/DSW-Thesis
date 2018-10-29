@@ -15,7 +15,7 @@ def get_XYZ_file(input_list, file_name):
                                ['N',1.00,2.00,1.00],
                                ['H',1.00,4.00,1.00], ...
                               ]
-                 file_name, name of export file.
+                 file_name, name of export file (i.e. "data.xyz")
     
     The script generates:
         xyz_data.xyz
