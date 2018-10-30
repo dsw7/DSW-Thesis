@@ -8,5 +8,5 @@ All code written by David Weber as part of his M.Sc. graduate work.
 ~/DSW-Thesis/thesis_Met-aromatic_cplusplus           // contains a very basic C++ implementation of Met-aromatic algorithm
 ~/DSW-Thesis/thesis_PDB_to_DFT                       // contains workflow for translating DMS approx. relative to aromatic plane + DFT
 ~/DSW-Thesis/thesis_SerialIO                         // contains example MATLAB code for Warren Lab laser hardware serial communication
-~/DSW-Thesis/thesis_PDB_to_DFT_part2                 // a second workflow for computing Morse surfaces as a function of ||v||, Met-theta angle
+~/DSW-Thesis/thesis_PDB_to_DFT_part2                 // second workflow for computing Morse surfaces as a function of ||v||, Met-theta angle
 ~/DSW-Thesis/xyz_file_generator.py                   // contains a homemade .xyz file generator
