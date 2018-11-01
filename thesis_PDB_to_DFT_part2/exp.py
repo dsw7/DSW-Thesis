@@ -182,8 +182,6 @@ rc = call([r'./inp_to_out.sh'])
 # orca continues processing despite closing python script
 # query the status of the shell command?
 
-
-
 # *******************************************************************
 # read in all energy levels
 
@@ -245,8 +243,14 @@ HOMO_transposed = array(HOMO_energies).transpose()
 LUMO_transposed = array(LUMO_energies).transpose()
 
 # *******************************************************************
-# the final plot
+# perform some dummy action using the final HOMO/LUMO energy data
+# here I plot a 3D surface
 
-fig = plt.figure()
+fig = plt.figure(figsize=(10, 10))
 ax = fig.gca(projection='3d')
-ax.plot_trisurf(*HOMO_transposed, cmap=cm.jet, linewidth=0.2)
+ax.plot_trisurf(*HOMO_transposed, cmap=cm.jet, linewidth=0.2) 
+ax.set_xlabel(r'$\|\|\vec{v}\|\| (\AA)$', size=15)
+ax.set_ylabel(r'$Met-\theta$ (degrees)', size=15)
+ax.set_zlabel(r'Energy (eV)', size=15)
+
+
