@@ -64,7 +64,7 @@ theta_start = 0.00   # where to start angle (degrees)
 theta_end   = 45.0   # where to end angle (degrees)
 theta_incre = 5.00   # increment
 
-syntax: [ [ ||v|| ], [Met-theta angles], [HOMO energies in eV]]
+syntax: [ [ ||v|| (Angstroms) ], [ Met-theta angles (degrees) ], [ HOMO energies (eV) ]]
 
 HOMO_energies = array(
       [[ 2.28521,  2.28521,  2.28521,  2.28521,  2.28521,  2.28521,
