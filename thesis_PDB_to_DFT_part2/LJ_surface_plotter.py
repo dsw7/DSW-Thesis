@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib           import cm
 
+# data stored in the form: [[||v|| (Angstroms)], [Met-theta angle (degrees)], [Energy (eV)]]
+
 coordinates_surface = np.array(
       [[ 2.28521,  2.28521,  2.28521,  2.28521,  2.28521,  2.28521,
          2.28521,  2.28521,  2.28521,  2.28521,  2.53521,  2.53521,
