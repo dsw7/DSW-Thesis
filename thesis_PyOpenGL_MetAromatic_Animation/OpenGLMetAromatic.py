@@ -1,0 +1,376 @@
+"""
+Written by dsw7@sfu.ca
+Here I animate the workings of the Met-aromatic algorithm
+
+------------------
+To run the program:
+$ python3 /path/to/OpenGLMetAromatic.py
+
+--------------
+Install notes:
+
+I think there may be a version incompatibility somewhere.
+The program appears to run fine but I get a few warnings
+at compilation:
+
+OpenGL_accelerate seems to be installed, but unable to import error checking entry point!
+Unable to load ArrayDatatype accelerator from OpenGL_accelerate
+Unable to load converters accelerators (wrapper, arraydatatype) from OpenGL_accelerate
+Unable to load arrayhelpers accelerator from OpenGL_accelerate
+OpenGL_accelerate seems to be installed, but unable to import expected wrapper entry points!
+Unable to load VBO accelerator from OpenGL_accelerate
+
+Path to this Python interpreter & libs:
+/Library/Frameworks/Python.framework/Versions/3.7/bin/python3
+/Library/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/
+"""
+
+import pygame
+from pygame.locals   import *
+from OpenGL.GL       import *
+from OpenGL.GLU      import *
+from OpenGL.GLUT     import *
+from retrieve_1rcy   import import_coords
+from numpy           import array, linalg
+from re              import search
+from itertools       import groupby, chain              
+from operator        import itemgetter 
+from collections     import deque                      
+
+CUTOFF            = 6.0  # Angstroms
+RES               = r'MET|PHE|TYR|TRP'
+ATOMS_MET         = r'CE|SD|CG' 
+ATOMS_TYR         = r'CD1|CE1|CZ|CG|CD2|CE2'   
+ATOMS_TRP         = r'CD2|CE3|CZ2|CH2|CZ3|CE2'  
+ATOMS_PHE         = r'CD1|CE1|CZ|CG|CD2|CE2'
+CLOCK_TIME        = 20  # frame rate period in ms -> corresponds to (10 ms -> 100 Hz)
+DISPLAY_DIMENSION = 800
+SLICES_STACKS     = (20, 20)
+
+# a dictionary of atom colors
+DICT_COLORS = {
+    'N': (0.0, 0.0, 1.0),
+    'O': (1.0, 0.0, 0.0),
+    'C': (0.75, 0.75, 0.75),
+    'S': (1.0, 1.0, 0)
+}
+
+# a dictionary of atom radii
+# carbon radius normalized to 0.01
+DICT_RADII = {
+    'N': 0.009,
+    'O': 0.008,
+    'C': 0.010,
+    'S': 0.0145
+}
+
+def drawVector(start, end):
+    # a function for drawing a line from one point to another
+    # does not include an arrowhead
+    glBegin(GL_LINES)
+    glVertex3f(*start)
+    glVertex3f(*end)
+    glEnd()
+
+def drawAtoms(data):
+    # populate the current matrix stack
+    # stack is populated with customized spheres for atom identities
+    glPushMatrix()
+    glTranslatef(*data[5]) 
+    glColor3f(*DICT_COLORS.get(data[4]))  # color different atoms
+    glutSolidSphere(DICT_RADII.get(data[4]), *SLICES_STACKS)  # custom radii
+    glPopMatrix()
+
+DICT_ATOMS_PHE = {
+'CG':'A', 'CD2':'B', 'CE2':'C', 
+'CZ':'D', 'CE1':'E', 'CD1':'F'
+}
+
+DICT_ATOMS_TYR = {
+'CG':'A', 'CD2':'B', 'CE2':'C', 
+'CZ':'D', 'CE1':'E', 'CD1':'F'
+}
+
+DICT_ATOMS_TRP = {
+'CD2':'A', 'CE3':'B', 'CZ3':'C', 
+'CH2':'D', 'CZ2':'E', 'CE2':'F'
+}
+
+# events
+SCAL = 0.20                                # scale event speed
+INC_1  =           (0,  SCAL * 1000)       # do nothing
+INC_2  = (SCAL * 1000,  SCAL * 2000)       # rotate the entire molecule for a second
+INC_3  = (SCAL * 2000,  SCAL * 3000)       # pause
+INC_4  = (SCAL * 3000,  SCAL * 4000)       # remove unneeded residues
+INC_5  = (SCAL * 4000,  SCAL * 5000)       # remove unneeded atoms
+
+# --------------------------------------------------
+# preprocessing prior to rendering
+
+# get 1rcy data
+RAW_INPUT_A = import_coords()  
+
+# append in key data, coordinate data and the Euclidean norm of coordinate data
+# new data of form: ['N', 'THR', 'A', '5', 'N', array([-13.081,   4.669,  24.745]), 28.37652457578271]
+RAW_INPUT_B = []
+for data in RAW_INPUT_A:
+    coord = array(data[6:9]).astype(float)
+    RAW_INPUT_B.append([*data[2:6], data[11], coord, linalg.norm(coord)])
+
+# get the most "far out" coordinate such that we can normalize vectors to frustrum
+N_C = 1 / max(i[6] for i in RAW_INPUT_B)
+VEC_V_NORM_NORMALIZED = CUTOFF * N_C
+
+# normalize data
+for i in range(0, len(RAW_INPUT_B)):
+    RAW_INPUT_B[i][5] = N_C * RAW_INPUT_B[i][5]
+
+# drop Euclidean norm data - no need to overload memory
+ALL_ATOMS = [i[0:6] for i in RAW_INPUT_B]
+
+# strip down to residues of interest - need all atoms for animation purposes
+STRIPPED_TO_RES = [i for i in ALL_ATOMS if search(RES, i[1]) != None]
+
+# strip down to specific atoms using regex
+# need separated data for Rodrigues rotation, midpoints and pooled for animation
+DATA_MET = [i for i in STRIPPED_TO_RES if i[1] == 'MET' and search(ATOMS_MET, i[0]) != None]
+DATA_PHE = [i for i in STRIPPED_TO_RES if i[1] == 'PHE' and search(ATOMS_PHE, i[0]) != None]
+DATA_TYR = [i for i in STRIPPED_TO_RES if i[1] == 'TYR' and search(ATOMS_TYR, i[0]) != None]
+DATA_TRP = [i for i in STRIPPED_TO_RES if i[1] == 'TRP' and search(ATOMS_TRP, i[0]) != None]
+STRIPPED_TO_ATOMS = DATA_MET + DATA_PHE + DATA_TYR + DATA_TRP
+
+# precompute midpoints
+# sort data prior to applying groupby operations
+DATA_ARO = DATA_PHE + DATA_TYR + DATA_TRP
+DATA_ARO = sorted(DATA_ARO, key=itemgetter(3))  # note lexicographic ordering
+
+# apply groupby operator
+DATA_ARO = [list(group) for _, group in groupby(DATA_ARO, lambda x: x[3])]  
+
+# get midpoints
+MIDPOINTS = []
+for grouped in DATA_ARO:
+    # map unique values to atomic label keys
+    for row in grouped:
+        if row[1] == 'PHE':
+            row[0] = DICT_ATOMS_PHE.get(row[0])
+        elif row[1] == 'TYR':
+            row[0] = DICT_ATOMS_TYR.get(row[0])
+        else:
+            row[0] = DICT_ATOMS_TRP.get(row[0])
+    
+    # then sort based on these values which are just A, B, C, D, E, F
+    ordered = sorted(grouped, key=itemgetter(0))
+
+    # rotate data
+    xyz_A = [c[5] for c in ordered]
+    deque_xyz_A = deque(xyz_A)
+    deque_xyz_A.rotate(1)
+    xyz_B = list(deque_xyz_A)
+
+    # get midpoints
+    for A, B in zip(xyz_A, xyz_B):
+        MIDPOINTS.append([ordered[0][3], 0.5 * (A + B)])
+    
+# get all vectors v
+SD = [i for i in DATA_MET if i[0] == 'SD']
+VECS_V = []
+for sds in SD:
+    for mps in MIDPOINTS:
+        VECS_V.append([sds[5], mps[1], sds[3], mps[0]])
+
+# apply distance condition to vectors v
+VECS_V_STRIPPED  = [i for i in VECS_V if linalg.norm(i[1] - i[0]) <= VEC_V_NORM_NORMALIZED]
+LABELS           = list(set(chain(*[i[2:4] for i in VECS_V_STRIPPED])))
+ATOMS_V_STRIPPED = [i for i in STRIPPED_TO_ATOMS if i[3] in LABELS]
+
+# hard code for zoom in, eigenvector about CG - SD - CE
+Z_TRANS, INC = 0.00, 0.05
+CG = ATOMS_V_STRIPPED[0][5]  # rename for clarity
+SD = ATOMS_V_STRIPPED[1][5]
+CE = ATOMS_V_STRIPPED[2][5]
+MP_CG_CE = 0.5 * (CG + CE)
+EIG_VEC = SD - MP_CG_CE      # the eigenvector of a tetrahedral rotation
+
+# get CE-SD, CG-SD antiparallel vectors mapped to origin
+AP_CG_SD = -1 * (CG - SD)
+AP_CE_SD = -1 * (CE - SD)
+
+# --------------------------------------------------
+# game loop
+
+pygame.init()
+pygame.display.set_caption('MA-Animation')
+display = (DISPLAY_DIMENSION, DISPLAY_DIMENSION)
+pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
+
+# setup the frustrum (viewing space)
+angle_fov = 45.0                                        # field of view angle
+aspect_ratio = display[0] / display[1]                  # aspect ratio
+z_start = 0.1                                           # the "start" of the viewing plane
+z_end = 50.0                                            # the "end" of the viewing plane
+gluPerspective(angle_fov, aspect_ratio, z_start, z_end)
+
+"""
+# starting camera position
+position_camera = (0.00, 0.00,  3.00)
+position_object = (0.00, 0.00,  0.00)
+rotation_camera = (0.00, 1.00,  0.00)
+gluLookAt(*position_camera, *position_object, *rotation_camera)
+"""
+glTranslatef(0.00, 0.00, -3.00)  # I'm using glTranslatef() for simplicity
+                                 # gluLookAt() wraps glTranslatef(), glRotatef() code anyways
+
+
+FRAMES = 0
+while True:
+    pygame.time.wait(CLOCK_TIME) # set frame rate
+    FRAMES += 1                  # our counter is the number of frames that have been rendered
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    #print('Stage 1 - Frames elapsed: {}'.format(FRAMES))
+
+    # poll events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
+
+    # render raw protein structure
+    # ----------------------------
+    if FRAMES >= INC_1[0]   and FRAMES < INC_1[1]: 
+        for data in ALL_ATOMS:
+            drawAtoms(data)
+
+
+    # remove unneeded residues
+    # ------------------------
+    elif FRAMES >= INC_2[0] and FRAMES < INC_2[1]:
+        for data in STRIPPED_TO_RES:
+            drawAtoms(data)
+        
+
+    # remove unneeded atoms
+    # ---------------------
+    elif FRAMES >= INC_3[0] and FRAMES < INC_3[1]: 
+        for data in STRIPPED_TO_ATOMS:
+            drawAtoms(data)
+
+
+    # web the feature space with vectors v
+    # ------------------------------------
+    elif FRAMES >= INC_4[0] and FRAMES < INC_4[1]:
+        for data in STRIPPED_TO_ATOMS:
+            drawAtoms(data)
+        for pairs in VECS_V:  # draw in vectors v
+            drawVector(*pairs[0:2])
+
+
+    # strip atoms + vectors not meeting distance condition
+    # ----------------------------------------------------
+    elif FRAMES >= INC_5[0] and FRAMES < INC_5[1]:
+        for data in ATOMS_V_STRIPPED:
+            drawAtoms(data)
+        for pairs in VECS_V_STRIPPED:
+            drawVector(*pairs[0:2])
+
+
+    # jump to next loop
+    else:
+        break
+
+    glFlush()
+    glutSwapBuffers()
+    glutPostRedisplay()
+    pygame.display.flip()
+    
+
+# scaled SD x, y coords by 1/100 () and translated towards origin
+# we move from (-0.12433176, -0.26009507, -3.00) to (0.00, 0.00, -1.00)
+TRANSLATE_TO_XY_ORIGIN = (0.01 * -SD[0], 0.01 * -SD[1], 0.02)
+
+FRAMES = 0 # reset frame count to zero
+while True:
+    pygame.time.wait(CLOCK_TIME)
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+    FRAMES += 1
+
+    # poll events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
+
+    # here we create a new origin - the SD coordinate
+    # -----------------------------------------------
+    if FRAMES < 100:
+        glTranslatef(*TRANSLATE_TO_XY_ORIGIN)
+
+    
+    # rotate origin for a better view
+    # -------------------------------
+    if FRAMES >= 100 and FRAMES < 200:
+        glTranslatef(*SD)                                # map to origin
+        glRotatef( 90 / (200 - 100), 1.00, 0.00, 0.00)   # rotate about x axis, do mult in place to preserve precision
+        glTranslatef(*-SD)                               # map back to original coordinates
+
+
+    # draw in eigenvector
+    # -------------------
+    if FRAMES >= 200:
+        glColor3f(0.00, 0.00, 1.00)    # render blue eigenvector
+        drawVector(-4 * EIG_VEC + SD, 
+                    4 * EIG_VEC + SD)  # here we also extend eigenvector in both directions
+    
+
+    # draw in antiparallel CG-SD / CE-SD vectors
+    # ------------------------------------------
+    if FRAMES >= 300 and FRAMES < 400:
+        glColor3f(0.00, 0.00, 1.00)
+        drawVector(SD, AP_CG_SD + SD)
+        drawVector(SD, AP_CE_SD + SD)
+
+    
+    # do an Euler rotation on antiparallel vectors
+    # --------------------------------------------
+    if FRAMES >= 400 and FRAMES < 491:
+        glPushMatrix()
+        glTranslatef(*SD)
+        glRotatef((FRAMES - 400), *EIG_VEC)
+        glTranslatef(*-SD)
+        drawVector(SD, AP_CG_SD + SD)
+        drawVector(SD, AP_CE_SD + SD)
+        glPopMatrix()
+
+
+    # hold the Euler rotation stationary
+    # ---------------------------------------------
+    if FRAMES >= 491:
+        glPushMatrix()
+        glTranslatef(*SD)
+        glRotatef(90.00, *EIG_VEC)
+        glTranslatef(*-SD)
+        drawVector(SD, AP_CG_SD + SD)
+        drawVector(SD, AP_CE_SD + SD)
+        glPopMatrix()
+
+
+    # rotate about x axis to better see lone pair positions
+    # ---------------------------------------------
+    if FRAMES >= 600 and FRAMES < 646:
+        glTranslatef(*SD)
+        glRotatef(1.00, 1.00, 0.00, 0.00) # note we don't increment by FRAMES - 600 here
+        glTranslatef(*-SD)                # -> because we're not doing Euler rotation
+
+
+    for data in ATOMS_V_STRIPPED:
+        drawAtoms(data)
+
+    for pairs in VECS_V_STRIPPED:
+        drawVector(*pairs[0:2])
+
+    glFlush()
+    glutSwapBuffers()
+    glutPostRedisplay()
+    pygame.display.flip()
