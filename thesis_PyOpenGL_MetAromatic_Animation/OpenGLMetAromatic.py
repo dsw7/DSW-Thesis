@@ -46,6 +46,7 @@ ATOMS_PHE         = r'CD1|CE1|CZ|CG|CD2|CE2'
 CLOCK_TIME        = 20  # frame rate period in ms -> corresponds to (10 ms -> 100 Hz)
 DISPLAY_DIMENSION = 800
 SLICES_STACKS     = (20, 20)
+LP_WIDTHS         = 5.0 # non default GLfloat that specifies lone pair width
 
 # a dictionary of atom colors
 DICT_COLORS = {
@@ -64,9 +65,10 @@ DICT_RADII = {
     'S': 0.0145
 }
 
-def drawVector(start, end):
+def drawVector(start, end, width=1.0):
     # a function for drawing a line from one point to another
     # does not include an arrowhead
+    glLineWidth(width)
     glBegin(GL_LINES)
     glVertex3f(*start)
     glVertex3f(*end)
@@ -96,13 +98,22 @@ DICT_ATOMS_TRP = {
 'CH2':'D', 'CZ2':'E', 'CE2':'F'
 }
 
-# events
-SCAL = 0.20                                # scale event speed
-INC_1  =           (0,  SCAL * 1000)       # do nothing
-INC_2  = (SCAL * 1000,  SCAL * 2000)       # rotate the entire molecule for a second
-INC_3  = (SCAL * 2000,  SCAL * 3000)       # pause
-INC_4  = (SCAL * 3000,  SCAL * 4000)       # remove unneeded residues
-INC_5  = (SCAL * 4000,  SCAL * 5000)       # remove unneeded atoms
+# first game loop
+# ---------------
+SCAL   = 0.01                                      # scale event speed - first game loop
+INC_1  =           (0,  SCAL * 1000)               # do nothing
+INC_2  = (SCAL * 1000,  SCAL * 2000)               # rotate the entire molecule for a second
+INC_3  = (SCAL * 2000,  SCAL * 3000)               # pause
+INC_4  = (SCAL * 3000,  SCAL * 4000)               # remove unneeded residues
+INC_5  = (SCAL * 4000,  SCAL * 5000)               # remove unneeded atoms
+
+# second game loop
+# ----------------
+SCAL2  = 1.00                                      # scale event speed - second game loop
+INC_6  = (0,            100)                       # zoom in is fixed at 100 frames
+INC_7  = (100,          200)                       # rotation rate can also be held constant
+INC_8  = (300,  SCAL2 * 400)                       # draw in antiparallel CG-SD / CE-SD vectors
+INC_9  = (INC_8[1], INC_8[1] + 90)                 # fixed 90 frame rotation
 
 # --------------------------------------------------
 # preprocessing prior to rendering
@@ -227,7 +238,6 @@ while True:
     pygame.time.wait(CLOCK_TIME) # set frame rate
     FRAMES += 1                  # our counter is the number of frames that have been rendered
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-    #print('Stage 1 - Frames elapsed: {}'.format(FRAMES))
 
     # poll events
     for event in pygame.event.get():
@@ -275,7 +285,8 @@ while True:
             drawVector(*pairs[0:2])
 
 
-    # jump to next loop
+    # GOTO next loop
+    # where I zoom in to a single met aromatic interaction
     else:
         break
 
@@ -287,7 +298,7 @@ while True:
 
 # scaled SD x, y coords by 1/100 () and translated towards origin
 # we move from (-0.12433176, -0.26009507, -3.00) to (0.00, 0.00, -1.00)
-TRANSLATE_TO_XY_ORIGIN = (0.01 * -SD[0], 0.01 * -SD[1], 0.02)
+TRANSLATE_TO_XY_ORIGIN = (1 / INC_6[1] * -SD[0], 1 / INC_6[1] * -SD[1], 0.02)
 
 FRAMES = 0 # reset frame count to zero
 while True:
@@ -304,63 +315,65 @@ while True:
 
     # here we create a new origin - the SD coordinate
     # -----------------------------------------------
-    if FRAMES < 100:
+    if FRAMES < INC_6[1]:
         glTranslatef(*TRANSLATE_TO_XY_ORIGIN)
 
     
     # rotate origin for a better view
     # -------------------------------
-    if FRAMES >= 100 and FRAMES < 200:
-        glTranslatef(*SD)                                # map to origin
-        glRotatef( 90 / (200 - 100), 1.00, 0.00, 0.00)   # rotate about x axis, do mult in place to preserve precision
-        glTranslatef(*-SD)                               # map back to original coordinates
+    if FRAMES >= INC_7[0] and FRAMES < INC_7[1]:
+        glTranslatef(*SD)                                          # map to origin
+        glRotatef( 90 / (INC_7[1] - INC_7[0]), 1.00, 0.00, 0.00)   # rotate about x axis, do mult in place to preserve precision
+        glTranslatef(*-SD)                                         # map back to original coordinates
 
 
     # draw in eigenvector
+    # fixed pause of 100 frames
     # -------------------
-    if FRAMES >= 200:
-        glColor3f(0.00, 0.00, 1.00)    # render blue eigenvector
-        drawVector(-4 * EIG_VEC + SD, 
-                    4 * EIG_VEC + SD)  # here we also extend eigenvector in both directions
+    if FRAMES >= INC_7[1]:
+        glColor3f(0.00, 0.00, 1.00)                      # render blue eigenvector
+        drawVector(-4 * EIG_VEC + SD, 4 * EIG_VEC + SD)  # here we also extend eigenvector in both directions
     
 
     # draw in antiparallel CG-SD / CE-SD vectors
+    # need custom pause here to describe these vectors
     # ------------------------------------------
-    if FRAMES >= 300 and FRAMES < 400:
+    if FRAMES >= INC_8[0] and FRAMES < INC_8[1]:
         glColor3f(0.00, 0.00, 1.00)
-        drawVector(SD, AP_CG_SD + SD)
-        drawVector(SD, AP_CE_SD + SD)
+        drawVector(SD, AP_CG_SD + SD, width=LP_WIDTHS)
+        drawVector(SD, AP_CE_SD + SD, width=LP_WIDTHS)
 
     
     # do an Euler rotation on antiparallel vectors
+    # here we strictly iterate over 90 frames
     # --------------------------------------------
-    if FRAMES >= 400 and FRAMES < 491:
+    if FRAMES >= INC_9[0] and FRAMES <= INC_9[1]:
         glPushMatrix()
         glTranslatef(*SD)
-        glRotatef((FRAMES - 400), *EIG_VEC)
+        glRotatef((FRAMES - INC_8[1]), *EIG_VEC)
         glTranslatef(*-SD)
-        drawVector(SD, AP_CG_SD + SD)
-        drawVector(SD, AP_CE_SD + SD)
+        drawVector(SD, AP_CG_SD + SD, width=LP_WIDTHS)
+        drawVector(SD, AP_CE_SD + SD, width=LP_WIDTHS)
         glPopMatrix()
 
 
-    # hold the Euler rotation stationary
-    # ---------------------------------------------
-    if FRAMES >= 491:
+    # hold the Euler rotation stationary at 90.00 for 100 frames
+    # ----------------------------------------------------------
+    if FRAMES > INC_9[1]:
         glPushMatrix()
         glTranslatef(*SD)
         glRotatef(90.00, *EIG_VEC)
         glTranslatef(*-SD)
-        drawVector(SD, AP_CG_SD + SD)
-        drawVector(SD, AP_CE_SD + SD)
+        drawVector(SD, AP_CG_SD + SD, width=LP_WIDTHS)
+        drawVector(SD, AP_CE_SD + SD, width=LP_WIDTHS)
         glPopMatrix()
 
 
     # rotate about x axis to better see lone pair positions
-    # ---------------------------------------------
-    if FRAMES >= 600 and FRAMES < 646:
+    # -----------------------------------------------------
+    if FRAMES >= INC_9[1] + 100 and FRAMES < INC_9[1] + 146: # 146 <- rotate by 46 deg, (46 frames)
         glTranslatef(*SD)
-        glRotatef(1.00, 1.00, 0.00, 0.00) # note we don't increment by FRAMES - 600 here
+        glRotatef(1.00, 1.00, 0.00, 0.00) # note we don't increment by FRAMES - INC_9... here
         glTranslatef(*-SD)                # -> because we're not doing Euler rotation
 
 
