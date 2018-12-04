@@ -11,4 +11,7 @@ All code written by David Weber as part of his M.Sc. graduate work.
 ~/DSW-Thesis/thesis_PDB_to_DFT_part2                 // second workflow for computing Morse surfaces as a function of ||v||, Met-theta angle
 ~/DSW-Thesis/xyz_file_generator.py                   // contains a homemade .xyz file generator
 ~/DSW-Thesis/PyOpenGL_MetAromatic_Animation          // contains a PyOpenGL/pygame animation of the Met-aromatic algorithm
+~/DSW-Thesis/legacy_Chain_comparator.tar             // legacy work for chain membership study of 2,611 structures*
+
+*These legacy directories may be removed in 2019 as this study was done multiple times
 
