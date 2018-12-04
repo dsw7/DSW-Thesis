@@ -6,8 +6,9 @@ Here I animate the workings of the Met-aromatic algorithm
 To run the program:
 $ python3 /path/to/OpenGLMetAromatic.py
 
---------------
+==============
 Install notes:
+==============
 
 I think there may be a version incompatibility somewhere.
 The program appears to run fine but I get a few warnings
@@ -35,7 +36,8 @@ from numpy           import array, linalg
 from re              import search
 from itertools       import groupby, chain              
 from operator        import itemgetter 
-from collections     import deque                      
+from collections     import deque    
+from time            import time             
 
 CUTOFF            = 6.0  # Angstroms
 RES               = r'MET|PHE|TYR|TRP'
@@ -43,10 +45,65 @@ ATOMS_MET         = r'CE|SD|CG'
 ATOMS_TYR         = r'CD1|CE1|CZ|CG|CD2|CE2'   
 ATOMS_TRP         = r'CD2|CE3|CZ2|CH2|CZ3|CE2'  
 ATOMS_PHE         = r'CD1|CE1|CZ|CG|CD2|CE2'
-CLOCK_TIME        = 20  # frame rate period in ms -> corresponds to (1 / ms * 1/1000) -> frequency in Hz)
+
 DISPLAY_DIMENSION = 800
 SLICES_STACKS     = (20, 20)
-LP_WIDTHS         = 5.0 # non default GLfloat that specifies lone pair width
+LP_WIDTHS         = 5.0  # non default GLfloat that specifies lone pair width
+
+# control timing
+# --------------
+CLOCK_TIME = 20     # frame rate period in ms -> corresponds to (1 / ms * 1/1000) -> frequency in Hz)
+SCAL       = 0.10   # scale event speed - first game loop
+SCAL2      = 1.00   # scale event speed - second game loop
+
+"""
+=============
+Timing notes:
+=============
+
+@ CLOCK_TIME -> 20, SCAL -> 0.08, SCAL2 -> 1.00
+-----------------------------------------------
+
+First frame: 0.021381855010986328 s
+* the time when protein first appears on window
+* Say "Rusticyanin obtained from PDB"
+
+Remove residues: 3.7628419399261475 s
+* the time at which residues are removed
+* Say "Only banking methionine and the aromatics"
+
+Remove atoms: 6.114755868911743 s
+* the time at which unnecessary atoms are removed
+* Say "Strip off unnecessary atoms"
+
+Web with v: 8.206990718841553 s
+* the time when the entire protein webbed with vectors v
+* Say "Project vectors from methionine sulfur to aromatics"
+
+Bank closely spaced residues: 10.735826015472412 s
+* the time when closely spaced residues are removed
+* Say "Bank only closely spaced methionine aromatic pairs"
+
+Zoom into SD: 14.840545892715454 s
+* here I zoom into the SD
+* I also put in an eigenvector
+Say "Zoom in a bit"
+
+Start rotation of LPs: 21.787418842315674 s
+* start of rotation of lone pairs
+Say "Lastly rotate the lone pairs into their natural position"
+
+
+@ CLOCK_TIME -> 20, SCAL -> 0.10, SCAL2 -> 1.00
+-----------------------------------------------
+First frame: 0.021639108657836914 s
+Remove residues: 5.1682679653167725 s
+Remove atoms: 8.098443031311035 s
+Web with v: 10.719419002532959 s
+Bank closely spaced residues: 13.92305874824524 s
+Zoom into SD: 18.514067888259888 s
+Start rotation of LPs: 25.40074586868286 s
+"""
 
 # a dictionary of atom colors
 DICT_COLORS = {
@@ -100,7 +157,6 @@ DICT_ATOMS_TRP = {
 
 # first game loop
 # ---------------
-SCAL   = 0.01                                      # scale event speed - first game loop
 INC_1  =           (0,  SCAL * 1000)               # do nothing
 INC_2  = (SCAL * 1000,  SCAL * 2000)               # rotate the entire molecule for a second
 INC_3  = (SCAL * 2000,  SCAL * 3000)               # pause
@@ -109,7 +165,6 @@ INC_5  = (SCAL * 4000,  SCAL * 5000)               # remove unneeded atoms
 
 # second game loop
 # ----------------
-SCAL2  = 1.00                                      # scale event speed - second game loop
 INC_6  = (0,            100)                       # zoom in is fixed at 100 frames
 INC_7  = (100,          200)                       # rotation rate can also be held constant
 INC_8  = (300,  SCAL2 * 400)                       # draw in antiparallel CG-SD / CE-SD vectors
@@ -210,7 +265,7 @@ AP_CE_SD = -1 * (CE - SD)
 # --------------------------------------------------
 # game loop
 
-pygame.init()
+pygame.init() 
 pygame.display.set_caption('MA-Animation')
 display = (DISPLAY_DIMENSION, DISPLAY_DIMENSION)
 pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
@@ -233,11 +288,24 @@ glTranslatef(0.00, 0.00, -3.00)  # I'm using glTranslatef() for simplicity
                                  # gluLookAt() wraps glTranslatef(), glRotatef() code anyways
 
 
+# timing
+# ------
+t_start = time()
+TICK_1 = True
+TICK_2 = True
+TICK_3 = True
+TICK_4 = True
+TICK_5 = True
+TICK_6 = True
+TICK_7 = True
+
+
 FRAMES = 0
 while True:
     pygame.time.wait(CLOCK_TIME) # set frame rate
     FRAMES += 1                  # our counter is the number of frames that have been rendered
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+
 
     # poll events
     for event in pygame.event.get():
@@ -248,7 +316,11 @@ while True:
 
     # render raw protein structure
     # ----------------------------
+    
     if FRAMES >= INC_1[0]   and FRAMES < INC_1[1]: 
+        if TICK_1: 
+            print('First frame: {} s'.format(time() - t_start))
+            TICK_1 = False
         for data in ALL_ATOMS:
             drawAtoms(data)
 
@@ -256,13 +328,19 @@ while True:
     # remove unneeded residues
     # ------------------------
     elif FRAMES >= INC_2[0] and FRAMES < INC_2[1]:
+        if TICK_2: 
+            print('Remove residues: {} s'.format(time() - t_start))
+            TICK_2 = False
         for data in STRIPPED_TO_RES:
             drawAtoms(data)
-        
+
 
     # remove unneeded atoms
     # ---------------------
-    elif FRAMES >= INC_3[0] and FRAMES < INC_3[1]: 
+    elif FRAMES >= INC_3[0] and FRAMES < INC_3[1]:
+        if TICK_3: 
+            print('Remove atoms: {} s'.format(time() - t_start))
+            TICK_3 = False
         for data in STRIPPED_TO_ATOMS:
             drawAtoms(data)
 
@@ -270,6 +348,9 @@ while True:
     # web the feature space with vectors v
     # ------------------------------------
     elif FRAMES >= INC_4[0] and FRAMES < INC_4[1]:
+        if TICK_4: 
+            print('Web with v: {} s'.format(time() - t_start))
+            TICK_4 = False
         for data in STRIPPED_TO_ATOMS:
             drawAtoms(data)
         for pairs in VECS_V:  # draw in vectors v
@@ -279,6 +360,9 @@ while True:
     # strip atoms + vectors not meeting distance condition
     # ----------------------------------------------------
     elif FRAMES >= INC_5[0] and FRAMES < INC_5[1]:
+        if TICK_5: 
+            print('Bank closely spaced residues: {} s'.format(time() - t_start))
+            TICK_5 = False
         for data in ATOMS_V_STRIPPED:
             drawAtoms(data)
         for pairs in VECS_V_STRIPPED:
@@ -322,6 +406,9 @@ while True:
     # rotate origin for a better view
     # -------------------------------
     if FRAMES >= INC_7[0] and FRAMES < INC_7[1]:
+        if TICK_6: 
+            print('Zoom into SD: {} s'.format(time() - t_start))
+            TICK_6 = False
         glTranslatef(*SD)                                          # map to origin
         glRotatef( 90 / (INC_7[1] - INC_7[0]), 1.00, 0.00, 0.00)   # rotate about x axis, do mult in place to preserve precision
         glTranslatef(*-SD)                                         # map back to original coordinates
@@ -348,6 +435,9 @@ while True:
     # here we strictly iterate over 90 frames
     # --------------------------------------------
     if FRAMES >= INC_9[0] and FRAMES <= INC_9[1]:
+        if TICK_7: 
+            print('Start rotation of LPs: {} s'.format(time() - t_start))
+            TICK_7 = False
         glPushMatrix()
         glTranslatef(*SD)
         glRotatef((FRAMES - INC_8[1]), *EIG_VEC)
