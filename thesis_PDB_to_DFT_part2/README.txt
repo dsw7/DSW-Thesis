@@ -1,44 +1,54 @@
-* David *
+# DSW Automated Pipeline for Performing ORCA Density Functional Theory Calculations - Part II
+
+## Description
+---  
 
 This directory is almost equivalent to:
-  ~/DSW-Thesis/these_PDB_to_DFT_part2
+
+    ~/DSW-Thesis/thesis_PDB_to_DFT
   
+<p begin="justify">
 Except here I am not pulling a Met-aromatic interaction from PDB and
 narrowing data down benzene / dimethylsulfide system. I am instead
 modelling the translation + rotation of H2S away from a benzene ring:
+</p>
 
-  C - C          H
- /     \        /
-C       C  <-> S
- \     /        \
-  C - C          H
-  
-  C - C            H
- /     \          /
-C       C  <- -> S
- \     /          \
-  C - C            H
-  
-  C - C              H
- /     \            /
-C       C  <- - -> S
- \     /            \
-  C - C              H
+      C - C          H
+     /     \        /
+    C       C  <-> S
+     \     /        \
+      C - C          H
+
+      C - C            H
+     /     \          /
+    C       C  <- -> S
+     \     /          \
+      C - C            H
+
+      C - C              H
+     /     \            /
+    C       C  <- - -> S
+     \     /            \
+      C - C              H
   
 ...
 
-The centroid of the benzene ring is the origin of this frame -> (0, 0, 0)
+The centroid of the benzene ring is the origin of this frame -> (0, 0, 0)  
 
-I am using the homogeneous transformation matrix:
+I am using the homogeneous transformation matrix:  
 
     |cos(a)  0  sin(a)   t|
     |     0  1       0   0|
 T = |-sin(a) 0  cos(a)   0|
     |     0  0       0   1|
     
+<img src="https://latex.codecogs.com/gif.latex?T%20%3D%20%5Cbegin%7Bbmatrix%7D%20%5Ccos%28a%29%20%26%200%20%26%20%5Csin%28a%29%20%26%20t%5C%5C%200%20%26%201%20%26%200%20%26%200%5C%5C%20-%5Csin%28a%29%20%26%200%20%26%20%5Ccos%28a%29%20%26%200%5C%5C%200%20%26%200%20%26%200%20%26%201%5C%5C%20%5Cend%7Bbmatrix%7D">    
+    
+<p begin="justify">    
 To move the H2S molecule away from the benzene by increment t,
 and to rotate the lone pairs away from the pi electron cloud
 by angle a.
+</p>
 
 I then perform DFT on all my rotations + translations:
 
@@ -50,10 +60,8 @@ I then perform DFT on all my rotations + translations:
 
 I fit this data to a 3-dimensional surface.
 
-
-
-----------------------------------------------------------------------------
-** Some example collected data **
+---  
+## Some example collected data
 
 Conditions:
 tr_start = 3.50   # where to start translation (Angstroms)
