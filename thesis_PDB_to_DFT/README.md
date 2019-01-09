@@ -1,4 +1,4 @@
-# DSW Automation Pipeline for Performing ORCA Density Functional Theory Calculations
+# DSW Automated Pipeline for Performing ORCA Density Functional Theory Calculations
 
 ## Description  
 <p align="justify">
