@@ -1,5 +1,5 @@
 ## Description  
-<p align="justified">
+<p align="justify">
 This is a super cool directory to both chemists and computer scientists alike. The directory
 gets an aromatic interaction of choosing from the PDB. A homogeneous transformation matrix
 is then used to increment the position of a dimethyl sulfide molecule (approximation for the
@@ -24,20 +24,24 @@ corresponding to a Met-aromatic interaction by manually editing AROMATIC_RESIDUE
 Run the script. This will place all the .xyz files into:
     ~/thesis_PDB_to_DFT/orca_workdir
 </p>
+
 ### Step 2
 <p align="justified">
 Open the .xyz files in Avogadro and manually add hydrogens. Save the files. Yes... I know this is frustrating.
 </p>
+
 ### Step 3
 <p align="justified">
 Next we generate input decks using xyz_to_inp.py. Simply execute the script.
 </p>
+
 ### Step 4
 <p align="justified">
 Then we generate the shell script for running ORCA calculations using inp_to_out.py. 
 Simply execute the script. The shell script inp_to_out.sh will be located in 
     ~/thesis_PDB_to_DFT/orca_workdir
 </p>
+
 ### Step 5
 <p align="justified">
 Run the shell script. To do so, open up cmd or terminal, depending on OS, then cd into orca_workdir.
@@ -47,16 +51,19 @@ Then type:
     $ sh inp_to_out.sh
  And ENTER. The DFT calculation will now begin. I used the default DFT parameters which render the DFT calculations very quick. Be advised that the amount of time taken to complete the DFT will increase significantly if my code is modified with other functionals. Increase your fan speeds if you do change my functionals as your computer may get super hot.
 </p>
+
 ### Step 6
 <p align="justified">
 If all goes well, ~/thesis_PDB_to_DFT/orca_workdir will be loaded with many .out files. Use cleanup.py to clean out
 other random junk files, unless you need them. This will help keep ~/orca_workdir clean. DFT calculations are notorious
 for generating a ton of random files. Note that you may still need to go through and clean out the folder manually.
 </p>
+
 ### Step 7
 <p align="justified">
 Use get_energies.py to generate a plot for the translation series. The x-axis may need to be flipped.
 </p>
+
 ### Step 8
 <p align="justified">
 I highly recommend completely clearing ~/thesis_PDB_to_DFT/orca_workdir as soon as the experiment is done.
