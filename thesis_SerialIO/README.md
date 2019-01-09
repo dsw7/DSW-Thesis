@@ -6,7 +6,7 @@ to hardware used for the Warren lab laser table. I have made every effort to ens
 all scripts are written according to the documentation for their respective hardware.
 I have also made sure that all scripts work standalone such that future lab members
 can replicate their execution.
-<\p>
+</p>
 
     ~/thesis_SerialIO/serial_CompuScope.m   // scope
     ~/thesis_SerialIO/serial_DK240.m        // monochromator
