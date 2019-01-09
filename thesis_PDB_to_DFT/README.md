@@ -1,3 +1,5 @@
+# DSW Automation Pipeline for Performing ORCA Density Functional Theory Calculations
+
 ## Description  
 <p align="justify">
 This is a super cool directory to both chemists and computer scientists alike. The directory
@@ -76,6 +78,7 @@ I highly recommend completely clearing ~/thesis_PDB_to_DFT/orca_workdir as soon 
 This folder will get filled with lots of crap and fast.
 </p>
 
----------------------------------------------------------------------------------------
+---   
+## Other notes:  
 
-~/thesis_PDB_to_DFT/get_raw.py <- can be used to fetch a single, untranslated, and non-geometry optimized "met-aromatic" pair
+    ~/thesis_PDB_to_DFT/get_raw.py // can be used to fetch a single, untranslated, and non-geometry optimized "met-aromatic" pair
