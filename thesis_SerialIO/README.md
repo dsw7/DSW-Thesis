@@ -1,4 +1,4 @@
-# WarrenLabLaserTable Hardware serial communication  
+### WarrenLabLaserTable hardware serial communication  
 
 <p align="justify">
 In this folder, I place examples of all scripts for connecting and disconnecting
