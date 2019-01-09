@@ -12,7 +12,8 @@ The Python script writes a shell script for the execution of DFT calculations us
 input decks. This shell script then executes all DFT calculations, creating .out decks in the process.
 Lastly, a script is used to read the .out decks and plot the HOMO and LUMO information for each
 translation as a function of the translation.
-</p>
+</p>   
+
 ---  
 
 ## Instructions:
@@ -22,7 +23,8 @@ translation as a function of the translation.
 Open get_translated.py and select the methionine and aromatic residue position numbers
 corresponding to a Met-aromatic interaction by manually editing AROMATIC_RESIDUE and METHIONINE_RESIDUE.
 Run the script. This will place all the .xyz files into:
-</p>
+</p>  
+
     ~/thesis_PDB_to_DFT/orca_workdir
 
 ### Step 2
@@ -39,15 +41,18 @@ Next we generate input decks using xyz_to_inp.py. Simply execute the script.
 <p align="justify">
 Then we generate the shell script for running ORCA calculations using inp_to_out.py. 
 Simply execute the script. The shell script inp_to_out.sh will be located in:
-</p>    
+</p>
+
     ~/thesis_PDB_to_DFT/orca_workdir
 
 ### Step 5
 <p align="justify">
 Run the shell script. To do so, open up cmd or terminal, depending on OS, then cd into orca_workdir.
-For me, it is:
+For me, it is:  
+    
     $ cd ~/Desktop/thesis_PDB_to_DFT/orca_workdir
-Then type:
+Then type:   
+
     $ sh inp_to_out.sh  
 <p align="justify">
 And ENTER. The DFT calculation will now begin. I used the default DFT parameters which render the DFT calculations very quick. Be advised that the amount of time taken to complete the DFT will increase significantly if my code is modified with other functionals. Increase your fan speeds if you do change my functionals as your computer may get super hot.
