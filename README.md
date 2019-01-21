@@ -21,7 +21,7 @@ All code written by David Weber as part of his M.Sc. graduate work.
     *These legacy directories may be removed in 2019 as this study was done multiple times
 
 ---   
-## Change comparator sequence of events:
+## Chain comparator sequence of events:
 
     (1) ::/legacy_Chain_comparator.tar           -> 2,611 proteins (Summer 2018)
     (2) ::/legacy_Chain_comparator_2.tar         -> entire PDB / IS condition assessed FOR A:MET:B (A & B = Tyr || Trp) ONLY (Sept 2018)
