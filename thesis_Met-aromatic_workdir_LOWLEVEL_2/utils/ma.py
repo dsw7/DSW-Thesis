@@ -22,7 +22,6 @@ from utils import RodriguesMethod
 from utils import vector_angle
 from numpy import array
 from numpy.linalg import norm
-from pandas import DataFrame
 
 
 class MetAromaticConstants:
