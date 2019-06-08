@@ -60,44 +60,41 @@ class MetAromatic(MetAromaticConstants):
         self.pdb_file_object = PDBFile(self.code)
 
     def get_data_from_pdb(self, *args):
-        filepath_or_error = self.pdb_file_object.fetch_from_pdb()
-        if type(filepath_or_error) == URLError:
-            return filepath_or_error
-        else:
-            raw_data = []
-            for line in open(filepath_or_error, 'r'):
-                raw_data.append(line.split())
-            self.pdb_file_object.clear()
-            return raw_data
+        file = self.pdb_file_object.fetch_from_pdb()
+        data = []
+        for line in open(file, 'r'):
+            data.append(line.split())
+        self.pdb_file_object.clear()
+        return data
 
     def get_first_model(self, *args):
-        raw_data = self.get_data_from_pdb(self)
-        model_first = []
-        for line in raw_data:
+        data = self.get_data_from_pdb(self)
+        model = []
+        for line in data:
             if line[self.IDX_ATOM] != 'ENDMDL':
-                model_first.append(line)
+                model.append(line)
             else:
                 break
-        return model_first
+        return model
 
     def get_atoms(self, *args):
-        model_first = self.get_first_model(self)
-        return [line for line in model_first if line[self.IDX_ATOM] == 'ATOM']
+        model = self.get_first_model(self)
+        return [line for line in model if line[self.IDX_ATOM] == 'ATOM']
 
     def get_chain(self, *args):
-        atomic_data = self.get_atoms(self)
-        return [line for line in atomic_data if line[self.IDX_CHAIN] == self.chain]
+        atoms = self.get_atoms(self)
+        return [line for line in atoms if line[self.IDX_CHAIN] == self.chain]
 
     def extract_aromatics(self, *args):
-        atomic_data = self.get_chain(self)
-        data_phe = [line for line in atomic_data if line[self.IDX_AA] == 'PHE']
-        data_tyr = [line for line in atomic_data if line[self.IDX_AA] == 'TYR']
-        data_trp = [line for line in atomic_data if line[self.IDX_AA] == 'TRP']
+        atoms = self.get_chain(self)
+        data_phe = [line for line in atoms if line[self.IDX_AA] == 'PHE']
+        data_tyr = [line for line in atoms if line[self.IDX_AA] == 'TYR']
+        data_trp = [line for line in atoms if line[self.IDX_AA] == 'TRP']
         return data_phe, data_trp, data_tyr
 
     def extract_methionines(self, *args):
-        atomic_data = self.get_chain(self)
-        return [line for line in atomic_data if line[self.IDX_AA] == 'MET']
+        atoms = self.get_chain(self)
+        return [line for line in atoms if line[self.IDX_AA] == 'MET']
 
     def cleanup_aromatics(self, *args):
         data_phe, data_trp, data_tyr = self.extract_aromatics(self)
