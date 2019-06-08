@@ -15,7 +15,7 @@ if __name__ == "__main__":
             print("-" * 50)
             print(test_entry + "\n")
             results = MetAromatic(test_entry).met_aromatic()
-            if results == []
+            if results == []:
                 print("No results.")
                 pass
             else:
