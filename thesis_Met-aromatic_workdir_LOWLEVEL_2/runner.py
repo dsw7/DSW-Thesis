@@ -1,4 +1,4 @@
-from sys import path; path.append(r".\utils")
+from sys import path; path.append(r"utils")
 from ma import MetAromatic
 from time import sleep
 from pandas import DataFrame, read_csv
@@ -15,10 +15,14 @@ if __name__ == "__main__":
             print("-" * 50)
             print(test_entry + "\n")
             results = MetAromatic(test_entry).met_aromatic()
-            df = DataFrame(results)
-            df.columns = columns
-            print(df)
-            sleep(0.5)
+            if results == []
+                print("No results.")
+                pass
+            else:
+                df = DataFrame(results)
+                df.columns = columns
+                print(df)
+                sleep(0.25)
         except Exception as exception:
             print(exception)
 
