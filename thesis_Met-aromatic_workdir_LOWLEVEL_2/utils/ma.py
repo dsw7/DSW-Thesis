@@ -181,8 +181,3 @@ class MetAromatic(MetAromaticConstants):
                     continue
 
         return end_result
-
-
-
-
-
