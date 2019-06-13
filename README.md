@@ -17,7 +17,6 @@ All code written by David Weber as part of his M.Sc. graduate work.
     ~/DSW-Thesis/PyOpenGL_MetAromatic_Animation          // contains a PyOpenGL/pygame animation of the Met-aromatic algorithm
     ~/DSW-Thesis/legacy_Chain_comparator.tar             // legacy work for chain membership study of 2,611 structures*
     ~/DSW-Thesis/legacy_Chain_comparator_2.tar           // legacy work for chain membership study of entire PDB*
-    ~/DSW-Thesis/thesis_Met-aromatic_workdir_LOWLEVEL_2  // contains a lower level implementation of Met-aromatic algorithm - REFACTORED SUMMER 2019
 
     *These legacy directories may be removed in 2019 as this study was done multiple times
 
