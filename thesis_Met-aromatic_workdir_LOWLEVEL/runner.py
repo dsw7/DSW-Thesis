@@ -1,6 +1,6 @@
 """
 dsw7@sfu.ca
-The "main" script that accepts PDB code input from user
+The "main" script that accepts PDB code input from user.
 """
 
 from sys import path
