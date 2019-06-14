@@ -35,4 +35,3 @@ for item in col.find():
 
 db.drop_collection(COL)
 client.close()
-
