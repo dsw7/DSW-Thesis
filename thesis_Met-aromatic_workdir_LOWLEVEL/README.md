@@ -1,19 +1,20 @@
 ### Met-aromatic LOW LEVEL routine
+---
 A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description.  
 
 To run the program:
 ```
 $ python runner.py <args>
 ```
-The program requires, at bare minimum, either a valid PDB code or a path to a text file containing a list of PDB codes to analyze:
+The program requires, at bare minimum, either a valid PDB code or a path to a text file containing a list of PDB codes to analyze. Here the arbitrary PDB code 1rcy is analyzed:
 ```
 $ python runner.py --code 1rcy
 ```
-Or:
+A batch job can be performed as follows:
 ```
 $ python runner.py --batch /path/to/foo.txt
 ```
-The PDB codes in the text file should be separated by newline characters. *NOTE:* Both parameters cannot be passed simultaneously. Next come the Met-aromatic algorithm constraints:
+The PDB codes in the batch job text file should be separated by newline characters. *NOTE:* Both code and batch parameters cannot be passed simultaneously. Next come the Met-aromatic algorithm constraints:
 ```
 $ python runner.py --code 1rcy --cutoff 4.9 --angle 90.0 --model cp
 ```
@@ -25,7 +26,22 @@ Console output is normally suppressed. Suppression can be lifted by passing the 
 ```
 $ python runner.py --code 1rcy --verbose
 ```
-
+There are several options available for working with output data. Data can either be exported to a .csv file or a MongoDB database. Export to a MongoDB database is recommended. Data cannot be exported to both a .csv file and a MongoDB database simultaneously. To save to a .csv file:
+```
+$ python runner.py --code 1rcy --export-csv /path/to/output.csv
+```
+Or a MongoDB database:
+```
+$ python runner.py --code 1rcy --export-mongo
+```
+MongoDB export can be modified as follows:
+```
+$ python runner.py --code 1rcy --export-mongo --mongoport 27017 --mongohost localhost --database my_database --collection my_collection
+```
+Default MongoDB parameters are passed if no export parameters are specified. No data is saved if no export parameter is passed. As always, defaults can be obtained using:
+```
+$ python runner.py --help
+```
 
 
 
