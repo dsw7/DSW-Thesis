@@ -99,13 +99,13 @@ def read_pdb_code_txt_file(filepath):
         return codes
 
 
-def run_met_aromatic(pdbcode):
+def run_met_aromatic(pdbcode, count):
+    print('-' * 10)
     try:
-        print('-' * 10)
-        print('Code: {}'.format(pdbcode))
+        print('{} - Code: {}'.format(count, pdbcode))
         return MetAromatic(pdbcode, cutoff=cutoff, angle=angle, model=model).met_aromatic()
     except Exception as exception:
-        print('An exception has occurred:')
+        print('{} - An exception has occurred:'.format(count))
         print(exception)
 
 
@@ -149,8 +149,8 @@ if __name__ == '__main__':
         else:
             pdb_codes = read_pdb_code_txt_file(path)
 
-        for code in pdb_codes:
-            results = run_met_aromatic(code)
+        for u, code in enumerate(pdb_codes, 1):
+            results = run_met_aromatic(code, u)
             if not results:
                 print('No interactions.')
             else:
