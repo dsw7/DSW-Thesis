@@ -4,38 +4,57 @@ The "main" script that accepts PDB code input from user.
 """
 
 import os
-from sys import path; path.append(r"utils")
+from sys import path; path.append("utils")
 from ma import MetAromatic
 from pprint import pprint
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
 from pymongo import MongoClient
 
 COLUMNS = ["ARO", "ARO POS", "MET", "MET POS", "NORM", "MET-THETA", "MET-PHI"]
 DEFAULT_PORT = 27017
 DEFAULT_HOST = "localhost"
-DB = "met_aromatic"
-COL = "results"
+DB = "ma"
+COL = "ma"
 
-parser = ArgumentParser(description="Input a PDB code:")
-parser.add_argument('--code', help='Usage: $ python runner.py --code <1abc>', default='0', type=str)
-parser.add_argument('--path', help='Usage: $ python runner.py --path /path/to/txt', default='0', type=str)
-parser.add_argument('--cutoff', help='Usage: $ python runner.py --cutoff <float>', default=6.0, type=float)
-parser.add_argument('--angle', help='Usage: $ python runner.py --angle <float>', default=109.5, type=float)
-parser.add_argument('--model', help='Usage: $ python runner.py --model <cp|rm>', default='cp')
-parser.add_argument('--verbose', help='Usage: $ python runner.py --verbose <cp|rm>', action='store_true')
-parser.add_argument('--export', help='Usage: $ python runner.py --export', action='store_true')
+msg_code = 'Process a pdb code. \nUsage: $ python runner.py --code <1abc>'
+msg_batch = 'Process a batch of pdb codes. \nUsage: $ python runner.py --batch /path/to/foo.txt'
+msg_cutoff = 'Set a Euclidean cutoff. \nDefault = 6.0 Angstroms. \nUsage: $ python runner.py --cutoff <float>'
+msg_angle = 'Set Met-theta/Met-phi angle. \nDefault = 109.5 degrees. \nUsage: $ python runner.py --angle <float>'
+msg_model = 'Set a lone pair interpolation model. \nDefault = cp. \nUsage: $ python runner.py --model <cp|rm>'
+msg_verbosity = 'Set output verbosity. \nUsage: $ python runner.py --verbose'
+msg_export_csv = 'Export results to csv. \nUsage: $ python runner.py --export-csv /path/to/bar.txt'
+msg_export_mongo = 'Export results to MongoDB. \nUsage: $ python runner.py --export-mongo'
+msg_port = 'Set a MongoDB port. \nDefault = 27017. \nUsage: $ python runner.py --mongoport <port>'
+msg_host = 'Set a MongoDB host. \nDefault = localhost. \nUsage: $ python runner.py --mongohost <port>'
+msg_db = 'Choose a MongoDB export database name. \nDefault = ma. \nUsage: $ python runner.py --database <name>'
+msg_col = 'Choose a MongoDB export collection name. \nDefault = ma. \nUsage: $ python runner.py --collection <name>'
+
+parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+parser.add_argument('--code', help=msg_code, default='0', type=str)
+parser.add_argument('--batch', help=msg_batch, default='0', type=str)
+parser.add_argument('--cutoff', help=msg_cutoff, default=6.0, type=float)
+parser.add_argument('--angle', help=msg_angle, default=109.5, type=float)
+parser.add_argument('--model', help=msg_model, default='cp')
+parser.add_argument('--verbose', help=msg_verbosity, action='store_true')
+parser.add_argument('--export-csv', help=msg_export_csv, default='False', dest='export_csv')
+parser.add_argument('--export-mongo', help=msg_export_mongo, action='store_true', dest='export_mongo')
+parser.add_argument('--mongoport', help=msg_port, default=DEFAULT_PORT, type=int)
+parser.add_argument('--mongohost', help=msg_host, default=DEFAULT_HOST, type=str)
+parser.add_argument('--database', help=msg_db, default=DB, type=str)
+parser.add_argument('--collection', help=msg_col, default=COL, type=str)
 
 code = parser.parse_args().code
-path = parser.parse_args().path
+path = parser.parse_args().batch
 cutoff = parser.parse_args().cutoff
 angle = parser.parse_args().angle
 model = parser.parse_args().model
 verbose = parser.parse_args().verbose
-export = parser.parse_args().export  # export to MongoDB
-
-client = MongoClient(DEFAULT_HOST, DEFAULT_PORT)
-db = client[DB]
-col = db[COL]
+export_csv = parser.parse_args().export_csv
+export_mongo = parser.parse_args().export_mongo
+mongoport = parser.parse_args().mongoport
+mongohost = parser.parse_args().mongohost
+database = parser.parse_args().database
+collection = parser.parse_args().collection
 
 
 def verify_user_input():
@@ -45,6 +64,14 @@ def verify_user_input():
         exit('Invalid pdb code: {}'.format(code))
     elif (code != '0') and (path != '0'):
         exit('Cannot choose between .txt file and pdb code.')
+    elif model not in ('cp', 'rm'):
+        exit("Invalid model. Valid models are: cp (Cross Product) or rm (Rodrigues' method).")
+    elif (angle < 0.0) or (angle > 180.00):
+        exit('Angle must be between 0 and 180 degrees.')
+    elif cutoff < 0:
+        exit('Cutoff must be greater than or equal to 0.0 Angstroms.')
+    elif export_mongo and (export_csv != 'False'):
+        exit('Cannot export to both MongoDB and a .csv document simultaneously.')
     else:
         pass
 
@@ -57,7 +84,9 @@ def print_args():
     print("Mongo Port: {}".format(DEFAULT_PORT))
     print("Mongo Host: {}".format(DEFAULT_HOST))
     print("Database Name: {}".format(DB))
-    print("Collection Name: {}\n".format(COL))
+    print("Collection Name: {}".format(COL))
+    print("Export to MongoDB: {}".format(export_mongo))
+    print("Export to csv: {}".format(export_csv))
 
 
 def read_pdb_code_txt_file(filepath):
@@ -94,12 +123,16 @@ def mapper(result):
     return outgoing
 
 
-#TODO: continue here with export to mongodb
 if __name__ == '__main__':
     verify_user_input()
     print_args()
 
-    if (code != '0') and (path == '0'):  # i.e. user inputs a valid pdb code but no path
+    if export_mongo:
+        client = MongoClient(mongohost, mongoport)
+        db = client[database]
+        col = db[collection]
+
+    if (code != '0') and (path == '0'):  # user inputs a valid pdb code but no path to batch file
         results = run_met_aromatic(code)
         if not results:
             print('No interactions.')
@@ -107,8 +140,10 @@ if __name__ == '__main__':
             results = mapper(results)
             if verbose:
                 pprint(results)
+            if export_mongo:
+                col.insert_many(results)
 
-    elif (code == '0') and (path != '0'):
+    elif (code == '0') and (path != '0'):  # user inputs no pdb code but valid path to batch file
         if not os.path.exists(path):
             exit('Path to file does not exist.')
         else:
@@ -122,5 +157,6 @@ if __name__ == '__main__':
                 results = mapper(results)
                 if verbose:
                     pprint(results)
+                if export_mongo:
+                    col.insert_many(results)
 
-client.close()
