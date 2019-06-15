@@ -133,15 +133,17 @@ if __name__ == '__main__':
         col = db[collection]
 
     if (code != '0') and (path == '0'):  # user inputs a valid pdb code but no path to batch file
-        results = run_met_aromatic(code)
+        results = run_met_aromatic(code, '-')
         if not results:
             print('No interactions.')
+
         else:
-            results = mapper(results)
             if verbose:
-                pprint(results)
+                pprint(mapper(results))
+
             if export_mongo:
-                col.insert_many(results)
+                col.insert_many(mapper(results))
+            # TODO: else export to txt...
 
     elif (code == '0') and (path != '0'):  # user inputs no pdb code but valid path to batch file
         if not os.path.exists(path):
@@ -153,10 +155,12 @@ if __name__ == '__main__':
             results = run_met_aromatic(code, u)
             if not results:
                 print('No interactions.')
+
             else:
-                results = mapper(results)
                 if verbose:
-                    pprint(results)
+                    pprint(mapper(results))
+
                 if export_mongo:
-                    col.insert_many(results)
+                    col.insert_many(mapper(results))
+                # TODO: else export to txt...
 
