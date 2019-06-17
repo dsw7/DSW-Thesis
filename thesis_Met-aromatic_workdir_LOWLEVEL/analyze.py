@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from networkx import Graph, connected_components
 
 DEFAULT_PORT = 27017
 DEFAULT_HOST = "localhost"
@@ -62,5 +63,37 @@ print(' -- Breakdowns by order: ')
 cursor = col.aggregate(query_count_order)
 for entry in list(cursor):
     print(' -- Order: {} | Count: {}'.format(entry.get('_id'), entry.get('count')))
+
+# group interactions for bridging interactions
+query_bridges = [
+    {
+        '$group': {
+            '_id': {
+                'code': "$code",
+            },
+            'pairs': {
+                '$addToSet':  {
+                    '$concat': ["$aro", "", "$arores", "|", "MET", "", "$met"]
+                }
+            }
+        }
+    },
+    {'$project': {'pairs': 1, '_id': 0}}
+]
+
+print('\n -- Bridges: ')
+cursor, bridges = col.aggregate(query_bridges), []
+for entry in list(cursor):
+    pairs = []
+    for pair in entry.get('pairs'):
+        pairs.append(tuple(pair.split('|')))
+
+    G = Graph()
+    G.add_edges_from(pairs)
+    for disconnects in list(connected_components(G)):
+        if len(disconnects) == 3:
+            bridges.append(disconnects)
+
+print(bridges)
 
 client.close()

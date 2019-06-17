@@ -9,6 +9,7 @@ from ma import MetAromatic
 from pprint import pprint
 from argparse import ArgumentParser, RawTextHelpFormatter
 from pymongo import MongoClient
+from hashlib import md5
 
 COLUMNS = ["ARO", "ARO POS", "MET", "MET POS", "NORM", "MET-THETA", "MET-PHI"]
 DEFAULT_PORT = 27017
@@ -112,7 +113,7 @@ def run_met_aromatic(pdbcode, count):
 def mapper(result, pdbcode):
     outgoing = []
     for item in result:
-        outgoing.append({
+        doc = {
             "code": pdbcode,
             "aro": item[0],
             "arores": item[1],
@@ -120,7 +121,12 @@ def mapper(result, pdbcode):
             "norm": item[4],
             "met-theta": item[5],
             "met-phi": item[6]
-        })
+        }
+
+        # overwrite MongoDB _id with custom _id to prevent writing duplicate data into database
+        _id = ''.join([str(i) for i in doc.values()])
+        doc['_id'] = md5(_id.encode()).hexdigest()
+        outgoing.append(doc)
     return outgoing
 
 
