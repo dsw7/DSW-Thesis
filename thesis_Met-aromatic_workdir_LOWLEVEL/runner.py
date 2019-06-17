@@ -109,10 +109,11 @@ def run_met_aromatic(pdbcode, count):
         print(exception)
 
 
-def mapper(result):
+def mapper(result, pdbcode):
     outgoing = []
     for item in result:
         outgoing.append({
+            "code": pdbcode,
             "aro": item[0],
             "arores": item[1],
             "met": item[3],
@@ -139,10 +140,10 @@ if __name__ == '__main__':
 
         else:
             if verbose:
-                pprint(mapper(results))
+                pprint(mapper(results, code))
 
             if export_mongo:
-                col.insert_many(mapper(results))
+                col.insert_many(mapper(results, code))
             # TODO: else export to txt...
 
     elif (code == '0') and (path != '0'):  # user inputs no pdb code but valid path to batch file
@@ -158,9 +159,9 @@ if __name__ == '__main__':
 
             else:
                 if verbose:
-                    pprint(mapper(results))
+                    pprint(mapper(results, code))
 
                 if export_mongo:
-                    col.insert_many(mapper(results))
+                    col.insert_many(mapper(results, code))
                 # TODO: else export to txt...
 
