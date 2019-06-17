@@ -58,19 +58,27 @@ class MetAromatic(MetAromaticConstants):
         self.angle = angle
         self.model = model
         self.pdb_file_object = PDBFile(self.code)
+        self.data = self._get_data_from_pdb()
 
-    def get_data_from_pdb(self, *args):
+    def _get_data_from_pdb(self, *args):
         file = self.pdb_file_object.fetch_from_pdb()
         data = []
         for line in open(file, 'r'):
-            data.append(line.split())
+            data.append(line)
         self.pdb_file_object.clear()
         return data
 
+    def get_ec_classifier(self, *args):
+        for line in self.data:
+            if search(r"(?=.*COMPND )(?=.* EC:)", line):
+                return line.split()[-1].strip(';')
+            else:
+                pass
+
     def get_first_model(self, *args):
-        data = self.get_data_from_pdb(self)
-        model = []
-        for line in data:
+        # split downstream as get_ec_classifier() requires unsplit strings
+        split, model = [line.split() for line in self.data], []
+        for line in split:
             if line[self.IDX_ATOM] != 'ENDMDL':
                 model.append(line)
             else:

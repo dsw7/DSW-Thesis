@@ -15,7 +15,7 @@ NOTES:
 
 import pytest
 from sys import path
-path.append(r"utils")
+path.append(r"../utils")
 from ma import MetAromatic
 path.append(r"utils_init")
 from ma_lowlevel import met_aromatic
@@ -23,15 +23,15 @@ from PDB_filegetter import PDBFile
 from time import sleep
 from pandas import DataFrame, read_csv, testing
 
-
 COLUMNS = ["ARO", "ARO POS", "MET", "MET POS", "NORM", "MET-THETA", "MET-PHI"]
 CHAIN = "A"
 CUTOFF = 6.0
 ANGLE = 109.5
 MODEL = "cp"
-START = 1450
-END = 1500
+START = 2000
+END = 3000
 ERRORS_TO_IGNORE = (ValueError, PermissionError)
+
 
 df = read_csv("randomized_pdb_codes.csv")
 df = df.iloc[START:END]
