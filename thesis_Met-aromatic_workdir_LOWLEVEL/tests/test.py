@@ -26,8 +26,8 @@ CHAIN = "A"
 CUTOFF = 6.0
 ANGLE = 109.5
 MODEL = "cp"
-START = 2000
-END = 3000
+START = 3000
+END = 4000
 ERRORS_TO_IGNORE = (ValueError, PermissionError)
 
 df = read_csv("randomized_pdb_codes.csv")

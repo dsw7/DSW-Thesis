@@ -104,15 +104,17 @@ def run_met_aromatic(pdbcode, count):
     print('-' * 10)
     try:
         print('{} - Code: {}'.format(count, pdbcode))
-        return MetAromatic(pdbcode, cutoff=cutoff, angle=angle, model=model).met_aromatic()
+        ma = MetAromatic(pdbcode, cutoff=cutoff, angle=angle, model=model)
+        return ma.met_aromatic(), ma.get_ec_classifier()
     except Exception as exception:
         print('{} - An exception has occurred:'.format(count))
         print(exception)
 
 
 def mapper(result, pdbcode):
-    outgoing = []
-    for item in result:
+    # a function for adapting Met-aromatic results to MongoDB
+    outgoing, ec = [], result[1]
+    for item in result[0]:
         doc = {
             "code": pdbcode,
             "aro": item[0],
@@ -120,7 +122,8 @@ def mapper(result, pdbcode):
             "met": item[3],
             "norm": item[4],
             "met-theta": item[5],
-            "met-phi": item[6]
+            "met-phi": item[6],
+            "ec": ec
         }
 
         # overwrite MongoDB _id with custom _id to prevent writing duplicate data into database
@@ -141,7 +144,7 @@ if __name__ == '__main__':
 
     if (code != '0') and (path == '0'):  # user inputs a valid pdb code but no path to batch file
         results = run_met_aromatic(code, '-')
-        if not results:
+        if not results[0]:
             print('No interactions.')
 
         else:
@@ -150,7 +153,7 @@ if __name__ == '__main__':
 
             if export_mongo:
                 col.insert_many(mapper(results, code))
-            # TODO: else export to txt...
+            # TODO: else export to csv...
 
     elif (code == '0') and (path != '0'):  # user inputs no pdb code but valid path to batch file
         if not os.path.exists(path):
@@ -160,7 +163,7 @@ if __name__ == '__main__':
 
         for u, code in enumerate(pdb_codes, 1):
             results = run_met_aromatic(code, u)
-            if not results:
+            if not results[0]:
                 print('No interactions.')
 
             else:
@@ -169,5 +172,4 @@ if __name__ == '__main__':
 
                 if export_mongo:
                     col.insert_many(mapper(results, code))
-                # TODO: else export to txt...
-
+                # TODO: else export to csv...
