@@ -105,9 +105,11 @@ def get_n_bridges_from_pairs(n=3):
 
             for disconnects in list(connected_components(G)):
                 if len(disconnects) == n:
-                    bridges.append((entry.get('_id'), disconnects))
+                    code_and_ec = entry.get('_id')
+                    code_and_ec.update({'bridge': disconnects})
+                    bridges.append(code_and_ec)
 
-        return bridges
+        return bridges  # export back into MongoDB?
 
 
 if __name__ == '__main__':
