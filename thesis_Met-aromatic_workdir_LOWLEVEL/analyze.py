@@ -93,7 +93,7 @@ def get_n_bridges_from_pairs(n=3):
     if n < 3:
         exit("Incorrect bridge order. A bridge must be of n >= 3.")
     else:
-        print(' -- Collected all {}-bridges: '.format(n))
+        print(' -- Collected all {}-bridges: \n'.format(n))
         bridges = []
         for entry in list(db['pairs'].find()):
             pairs = []

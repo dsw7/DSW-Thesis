@@ -10,6 +10,7 @@ from pprint import pprint
 from argparse import ArgumentParser, RawTextHelpFormatter
 from pymongo import MongoClient
 from hashlib import md5
+from time import time
 
 COLUMNS = ["ARO", "ARO POS", "MET", "MET POS", "NORM", "MET-THETA", "MET-PHI"]
 DEFAULT_PORT = 27017
@@ -87,7 +88,7 @@ def print_args():
     print("Database Name: {}".format(DB))
     print("Collection Name: {}".format(COL))
     print("Export to MongoDB: {}".format(export_mongo))
-    print("Export to csv: {}".format(export_csv))
+    print("Export to csv: {}\n".format(export_csv))
 
 
 def read_pdb_code_txt_file(filepath):
@@ -100,14 +101,12 @@ def read_pdb_code_txt_file(filepath):
         return codes
 
 
-def run_met_aromatic(pdbcode, count):
-    print('-' * 10)
+def run_met_aromatic(pdbcode):
     try:
-        print('{} - Code: {}'.format(count, pdbcode))
         ma = MetAromatic(pdbcode, cutoff=cutoff, angle=angle, model=model)
         return ma.met_aromatic(), ma.get_ec_classifier()
     except Exception as exception:
-        print('{} - An exception has occurred:'.format(count))
+        print('An exception has occurred:')
         print(exception)
 
 
@@ -133,6 +132,12 @@ def mapper(result, pdbcode):
     return outgoing
 
 
+def print_progress(pdbcode, current_count, overall_count):
+    percent = round(current_count * 100 / overall_count, 2)
+    msg = '{}. Iteration {} out of {}. {} % complete.'.format(pdbcode, current_count, overall_count, percent)
+    print(msg)
+
+
 if __name__ == '__main__':
     verify_user_input()
     print_args()
@@ -143,10 +148,12 @@ if __name__ == '__main__':
         col = db[collection]
 
     if (code != '0') and (path == '0'):  # user inputs a valid pdb code but no path to batch file
-        results = run_met_aromatic(code, '-')
-        if not results[0]:
-            print('No interactions.')
+        results = run_met_aromatic(code)
 
+        if results is None:
+            print('NoneType object was returned from MetAromatic algorithm.')
+        elif not results[0]:
+            print('No interactions.')
         else:
             if verbose:
                 pprint(mapper(results, code))
@@ -160,12 +167,17 @@ if __name__ == '__main__':
             exit('Path to file does not exist.')
         else:
             pdb_codes = read_pdb_code_txt_file(path)
+            overall = len(pdb_codes)
+            start = time()
 
         for u, code in enumerate(pdb_codes, 1):
-            results = run_met_aromatic(code, u)
-            if not results[0]:
-                print('No interactions.')
+            print_progress(code, u, overall)
+            results = run_met_aromatic(code)
 
+            if results is None:
+                print('NoneType object was returned from MetAromatic algorithm.')
+            elif not results[0]:
+                continue
             else:
                 if verbose:
                     pprint(mapper(results, code))
@@ -173,3 +185,6 @@ if __name__ == '__main__':
                 if export_mongo:
                     col.insert_many(mapper(results, code))
                 # TODO: else export to csv...
+
+        print('\n' + '-' * 50)
+        print('Total processing time: {} s'.format(time() - start))
