@@ -27,7 +27,7 @@ msg_verbosity = 'Set output verbosity. \nUsage: $ python runner.py --verbose'
 msg_export_csv = 'Export results to csv. \nUsage: $ python runner.py --export-csv /path/to/bar.txt'
 msg_export_mongo = 'Export results to MongoDB. \nUsage: $ python runner.py --export-mongo'
 msg_port = 'Set a MongoDB port. \nDefault = 27017. \nUsage: $ python runner.py --mongoport <port>'
-msg_host = 'Set a MongoDB host. \nDefault = localhost. \nUsage: $ python runner.py --mongohost <port>'
+msg_host = 'Set a MongoDB host. \nDefault = localhost. \nUsage: $ python runner.py --mongohost <host>'
 msg_db = 'Choose a MongoDB export database name. \nDefault = ma. \nUsage: $ python runner.py --database <name>'
 msg_col = 'Choose a MongoDB export collection name. \nDefault = ma. \nUsage: $ python runner.py --collection <name>'
 
@@ -68,8 +68,8 @@ def verify_user_input():
         exit('Cannot choose between .txt file and pdb code.')
     elif model not in ('cp', 'rm'):
         exit("Invalid model. Valid models are: cp (Cross Product) or rm (Rodrigues' method).")
-    elif (angle < 0.0) or (angle > 180.00):
-        exit('Angle must be between 0 and 180 degrees.')
+    elif (angle < 0.0) or (angle > 360.00):
+        exit('Angle must be between 0 and 360 degrees.')
     elif cutoff < 0:
         exit('Cutoff must be greater than or equal to 0.0 Angstroms.')
     elif export_mongo and (export_csv != 'False'):
@@ -83,10 +83,10 @@ def print_args():
     print("Cutoff: {}".format(cutoff))
     print("Angle: {}".format(angle))
     print("Model: {}".format(model))
-    print("Mongo Port: {}".format(DEFAULT_PORT))
-    print("Mongo Host: {}".format(DEFAULT_HOST))
-    print("Database Name: {}".format(DB))
-    print("Collection Name: {}".format(COL))
+    print("Mongo Port: {}".format(mongoport))
+    print("Mongo Host: {}".format(mongohost))
+    print("Database Name: {}".format(database))
+    print("Collection Name: {}".format(collection))
     print("Export to MongoDB: {}".format(export_mongo))
     print("Export to csv: {}\n".format(export_csv))
 
@@ -160,7 +160,7 @@ if __name__ == '__main__':
 
             if export_mongo:
                 col.insert_many(mapper(results, code))
-            # TODO: else export to csv...
+            # TODO: else export to csv... might remove this -> .csvs are really not a good way to work with data
 
     elif (code == '0') and (path != '0'):  # user inputs no pdb code but valid path to batch file
         if not os.path.exists(path):

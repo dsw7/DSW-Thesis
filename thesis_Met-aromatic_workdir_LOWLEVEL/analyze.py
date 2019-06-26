@@ -1,21 +1,43 @@
+"""
+dsw7@sfu.ca
+The analysis script that processes the results of the Met-aromatic algorithm
+"""
+
 from pymongo import MongoClient
 from networkx import Graph, connected_components
+from argparse import ArgumentParser, RawTextHelpFormatter
 
 DEFAULT_PORT = 27017
 DEFAULT_HOST = "localhost"
 DB = "ma"
 COL = "ma"
 
-print(' -- Connected to MongoDB on:')
-print(' -- Port: {}'.format(DEFAULT_PORT))
-print(' -- Host: {}'.format(DEFAULT_HOST))
-print(' -- Database: {}'.format(DB))
-print(' -- Collection: {}\n'.format(COL))
-print(' -- Analyzing...\n')
+msg_db = 'Choose a MongoDB database name to process. \nDefault = ma. \nUsage: $ python analyze.py --database <...>'
+msg_col = 'Choose a MongoDB collection name to process. \nDefault = ma. \nUsage: $ python analyze.py --collection <...>'
+msg_port = 'Choose a MongoDB port. \nDefault = 27017. \nUsage: $ python analyze.py --mongoport <port>'
+msg_host = 'Choose a MongoDB host. \nDefault = localhost. \nUsage: $ python analyze.py --mongohost <host>'
 
-client = MongoClient(DEFAULT_HOST, DEFAULT_PORT)
-db = client[DB]
-col = db[COL]
+parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+parser.add_argument('--mongoport', help=msg_port, default=DEFAULT_PORT, type=int)
+parser.add_argument('--mongohost', help=msg_host, default=DEFAULT_HOST, type=str)
+parser.add_argument('--database', help=msg_db, default=DB, type=str)
+parser.add_argument('--collection', help=msg_col, default=COL, type=str)
+
+mongoport = parser.parse_args().mongoport
+mongohost = parser.parse_args().mongohost
+database = parser.parse_args().database
+collection = parser.parse_args().collection
+
+client = MongoClient(mongohost, mongoport)
+db = client[database]
+col = db[collection]
+
+print(' -- Connected to MongoDB on:')
+print(' -- Port: {}'.format(mongoport))
+print(' -- Host: {}'.format(mongohost))
+print(' -- Database: {}'.format(database))
+print(' -- Collection: {}\n'.format(collection))
+print(' -- Analyzing...\n')
 
 
 def count_entries():
