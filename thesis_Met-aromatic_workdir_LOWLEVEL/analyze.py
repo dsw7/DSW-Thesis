@@ -3,6 +3,12 @@ dsw7@sfu.ca
 The analysis script that processes the results of the Met-aromatic algorithm
 """
 
+# -------------------------------------------------------------------------------------------
+# TODO: need to reorganize the three primary collections
+# TODO: need to warn user about existing collections and that duplicate data will be loaded if collection not deleted
+
+# -------------------------------------------------------------------------------------------
+
 from pymongo import MongoClient, errors
 from networkx import Graph, connected_components
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -11,7 +17,7 @@ DEFAULT_PORT = 27017
 DEFAULT_HOST = "localhost"
 DB = "ma"
 COL = "ma"
-COLLECTION_BRIDGES = "bridges"   #TODO: need to reorganize the three primary collections
+COLLECTION_BRIDGES = "bridges"
 COLLECTION_PAIRS = "pairs"
 
 msg_db = 'Choose a MongoDB database name to process. \nDefault = ma. \nUsage: $ python analyze.py --database <...>'
@@ -132,7 +138,6 @@ def get_bridges_from_pairs(n=2, name_collection='bridges'):
     if n < 2:
         exit("Incorrect bridge order. A bridge must be of n >= 2!")
     else:
-        print(' -- Collected all {}-bridges and exported to collection: bridges \n'.format(n))
         bridges = []
         for entry in list(db['pairs'].find()):
             pairs = []
@@ -152,10 +157,17 @@ def get_bridges_from_pairs(n=2, name_collection='bridges'):
                                 'bridge': list(disconnects)
                             }
                         )
+                    else:
+                        pass
+                else:
+                    pass
+
         try:
             db[name_collection].insert_many(bridges)
         except errors.BulkWriteError as pymongo_exception:
             print(pymongo_exception.details['writeErrors'])
+        else:
+            print(' -- Collected all {}-bridges and exported to collection: bridges \n'.format(n))
 
 
 if __name__ == '__main__':
