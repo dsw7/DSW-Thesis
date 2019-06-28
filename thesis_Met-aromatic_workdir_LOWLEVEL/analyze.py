@@ -3,7 +3,7 @@ dsw7@sfu.ca
 The analysis script that processes the results of the Met-aromatic algorithm
 """
 
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 from networkx import Graph, connected_components
 from argparse import ArgumentParser, RawTextHelpFormatter
 
@@ -11,6 +11,8 @@ DEFAULT_PORT = 27017
 DEFAULT_HOST = "localhost"
 DB = "ma"
 COL = "ma"
+COLLECTION_BRIDGES = "bridges"   #TODO: need to reorganize the three primary collections
+COLLECTION_PAIRS = "pairs"
 
 msg_db = 'Choose a MongoDB database name to process. \nDefault = ma. \nUsage: $ python analyze.py --database <...>'
 msg_col = 'Choose a MongoDB collection name to process. \nDefault = ma. \nUsage: $ python analyze.py --collection <...>'
@@ -49,6 +51,9 @@ def count_entries():
 
 
 def breakdowns_by_order():
+    """
+    :return: Nothing. Function performs operation pass-by style.
+    """
     query = [
         {
             '$group': {
@@ -88,13 +93,17 @@ def breakdowns_by_order():
         print(' -- Order: {} | Count: {}'.format(entry.get('_id'), entry.get('count')))
 
 
-def move_pairs():
+def move_pairs(name_collection='pairs'):
+    """
+    :param name_collection: The name of the MongoDB collection to export to.
+    :return: Nothing. Function performs operation pass-by style.
+    """
     query = [
         {
             '$group': {
                 '_id': {
                     'code': "$code",
-                    'EC': "$ec",
+                    'EC': {'$substr': ["$ec", 0, 1]}  # 1.2.3.56 -> 1
                 },
                 'pairs': {
                     '$addToSet':  {
@@ -103,19 +112,27 @@ def move_pairs():
                 }
             }
         },
-        {'$project': {'pairs': 1, '_id': 1}},
-        {'$out': 'pairs'}
+        {'$project': {'pairs': 1, 'EC': '$_id.EC', 'code': '$_id.code', '_id': 0}},
+        {'$out': name_collection}
     ]
 
     col.aggregate(query)
     print("\n -- Wrote pair data to collection: pairs")
 
 
-def get_n_bridges_from_pairs(n=3):
-    if n < 3:
-        exit("Incorrect bridge order. A bridge must be of n >= 3.")
+def get_bridges_from_pairs(n=2, name_collection='bridges'):
+    """
+    I import from MongoDB here, take advantage of NetworkX to find n-bridges using
+    network theory approaches then export back to MongoDB for storage.
+
+    :param n: 2-bridge, 3-bridge, 4-bridge, etc.
+    :param name_collection: The MongoDB collection to export data to.
+    :return: Nothing. Function performs operation pass-by style.
+    """
+    if n < 2:
+        exit("Incorrect bridge order. A bridge must be of n >= 2!")
     else:
-        print(' -- Collected all {}-bridges: \n'.format(n))
+        print(' -- Collected all {}-bridges and exported to collection: bridges \n'.format(n))
         bridges = []
         for entry in list(db['pairs'].find()):
             pairs = []
@@ -126,21 +143,25 @@ def get_n_bridges_from_pairs(n=3):
             G.add_edges_from(pairs)
 
             for disconnects in list(connected_components(G)):
-                if len(disconnects) == n:
-                    code_and_ec = entry.get('_id')
-                    code_and_ec.update({'bridge': disconnects})
-                    bridges.append(code_and_ec)
-
-        return bridges  # export back into MongoDB?
+                if len(disconnects) == n + 1:
+                    if ''.join(disconnects).count('MET') == 1:  # remove inverse bridges -> MET-ARO-MET
+                        bridges.append(
+                            {
+                                'code': entry.get('code'),
+                                'EC': entry.get('EC'),
+                                'bridge': list(disconnects)
+                            }
+                        )
+        try:
+            db[name_collection].insert_many(bridges)
+        except errors.BulkWriteError as pymongo_exception:
+            print(pymongo_exception.details['writeErrors'])
 
 
 if __name__ == '__main__':
     count_entries()
     breakdowns_by_order()
     move_pairs()
-
-    for item in get_n_bridges_from_pairs():
-        print(item)
-
+    get_bridges_from_pairs()
 
 client.close()
