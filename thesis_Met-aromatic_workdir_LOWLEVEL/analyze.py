@@ -170,6 +170,52 @@ def get_bridges_from_pairs(n=2, name_collection='bridges'):
             print(' -- Collected all {}-bridges and exported to collection: bridges \n'.format(n))
 
 
+def count_bridges(bridges):
+    """
+    I get bridge counts here for visualization. Need to re-import bridges from
+    MongoDB and load into nested list prior to getting count.
+
+    :param bridges: Data of form:
+    [
+        ["TYR203", "PHE151", "MET152"],
+        ["MET449", "TRP312", "PHE452"],
+        ["MET257", "PHE297", "PHE286"],
+        ...
+    ]
+    :return: A dict of form: {
+        PHE-PHE: 3,
+        TYR-TYR: 0,
+        TRP-TRP: 0,
+        TYR-TRP: 0,
+        PHE-TYR: 2,
+        PHE-TRP: 1
+    }
+    """
+
+    # clean up data prior to count
+    refined = []
+    for bridge in bridges:
+        bridge.remove(*(amino_acid for amino_acid in bridge if "MET" in amino_acid))
+        refined.append(''.join([s for s in '-'.join(bridge) if not s.isdigit()]))
+
+    # actual counts
+    FF = refined.count('PHE-PHE')
+    YY = refined.count('TYR-TYR')
+    WW = refined.count('TRP-TRP')
+    YW = refined.count('TYR-TRP') + refined.count('TRP-TYR')
+    FY = refined.count('TYR-PHE') + refined.count('PHE-TYR')
+    FW = refined.count('PHE-TRP') + refined.count('TRP-PHE')
+
+    return {
+        'PHE-PHE': FF,
+        'TYR-TYR': YY,
+        'TRP-TRP': WW,
+        'TYR-TRP': YW,
+        'PHE-TYR': FY,
+        'PHE-TRP': FW
+    }
+
+
 if __name__ == '__main__':
     count_entries()
     breakdowns_by_order()
