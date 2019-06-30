@@ -5,59 +5,40 @@ The analysis script that processes the results of the Met-aromatic algorithm
 
 # -------------------------------------------------------------------------------------------
 # TODO: need to reorganize the three primary collections
-# TODO: need to warn user about existing collections and that duplicate data will be loaded if collection not deleted
+# TODO: remove argparsed arguments --
+from pymongo import MongoClient, errors
+from networkx import Graph, connected_components
+from itertools import groupby
+
+# -------------------------------------------------------------------------------------------
+mongoport = 27017
+mongohost = "localhost"
+database = "ma"
+collection = "ma"
+client = MongoClient(mongohost, mongoport)
+
 
 # -------------------------------------------------------------------------------------------
 
-from pymongo import MongoClient, errors
-from networkx import Graph, connected_components
-from argparse import ArgumentParser, RawTextHelpFormatter
 
-DEFAULT_PORT = 27017
-DEFAULT_HOST = "localhost"
-DB = "ma"
-COL = "ma"
-COLLECTION_BRIDGES = "bridges"
-COLLECTION_PAIRS = "pairs"
-
-msg_db = 'Choose a MongoDB database name to process. \nDefault = ma. \nUsage: $ python analyze.py --database <...>'
-msg_col = 'Choose a MongoDB collection name to process. \nDefault = ma. \nUsage: $ python analyze.py --collection <...>'
-msg_port = 'Choose a MongoDB port. \nDefault = 27017. \nUsage: $ python analyze.py --mongoport <port>'
-msg_host = 'Choose a MongoDB host. \nDefault = localhost. \nUsage: $ python analyze.py --mongohost <host>'
-
-parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-parser.add_argument('--mongoport', help=msg_port, default=DEFAULT_PORT, type=int)
-parser.add_argument('--mongohost', help=msg_host, default=DEFAULT_HOST, type=str)
-parser.add_argument('--database', help=msg_db, default=DB, type=str)
-parser.add_argument('--collection', help=msg_col, default=COL, type=str)
-
-mongoport = parser.parse_args().mongoport
-mongohost = parser.parse_args().mongohost
-database = parser.parse_args().database
-collection = parser.parse_args().collection
-
-client = MongoClient(mongohost, mongoport)
-db = client[database]
-col = db[collection]
-
-print(' -- Connected to MongoDB on:')
-print(' -- Port: {}'.format(mongoport))
-print(' -- Host: {}'.format(mongohost))
-print(' -- Database: {}'.format(database))
-print(' -- Collection: {}\n'.format(collection))
-print(' -- Analyzing...\n')
-
-
-def count_entries():
-    count = len(list(col.distinct('code')))
+def count_entries(query_database, query_collection):
+    """
+    :param query_database: Database in which Met-aromatic pairs are located.
+    :param query_collection: Collection in which Met-aromatic pairs are located.
+    :return: Nothing. Function performs operation pass-by style.
+    """
+    cursor = client[query_database][query_collection]
+    count = len(cursor.distinct('code'))
     if not count:
-        exit(' -- Empty database. Exiting.')
+        exit(' -- Empty collection: {}. Exiting.'.format(query_collection))
     else:
         print(' -- Number of unique entries analyzed: {}\n'.format(count))
 
 
-def breakdowns_by_order():
+def breakdowns_by_order(query_database, query_collection):
     """
+    :param query_database: Database in which Met-aromatic pairs are located.
+    :param query_collection: Collection in which Met-aromatic pairs are located.
     :return: Nothing. Function performs operation pass-by style.
     """
     query = [
@@ -94,16 +75,24 @@ def breakdowns_by_order():
     ]
 
     print(' -- Breakdowns by order: ')
-    cursor = col.aggregate(query)
-    for entry in list(cursor):
+    cursor = client[query_database][query_collection].aggregate(query)
+    for entry in cursor:
         print(' -- Order: {} | Count: {}'.format(entry.get('_id'), entry.get('count')))
 
 
-def move_pairs(name_collection='pairs'):
+def get_pairs(query_database, query_collection, name_collection_outgoing):
     """
-    :param name_collection: The name of the MongoDB collection to export to.
+    Function gets methionine-aromatic pairs from base collection obtained from
+    runner.py. Function then exports the pairs to a new collection.
+
+    :param query_database: Database in which Met-aromatic pairs are located.
+    :param query_collection: Collection in which Met-aromatic pairs are located.
+    :param name_collection_outgoing: The name of the MongoDB collection to export to.
     :return: Nothing. Function performs operation pass-by style.
     """
+    # ensure duplicates are not being loaded
+    client[query_database][name_collection_outgoing].drop()
+
     query = [
         {
             '$group': {
@@ -119,27 +108,33 @@ def move_pairs(name_collection='pairs'):
             }
         },
         {'$project': {'pairs': 1, 'EC': '$_id.EC', 'code': '$_id.code', '_id': 0}},
-        {'$out': name_collection}
+        {'$out': name_collection_outgoing}
     ]
 
-    col.aggregate(query)
-    print("\n -- Wrote pair data to collection: pairs")
+    client[query_database][query_collection].aggregate(query)
+    print("\n -- Wrote Met-aromatic pair data to collection: {}".format(name_collection_outgoing))
 
 
-def get_bridges_from_pairs(n=2, name_collection='bridges'):
+def get_bridges_from_pairs(query_database, query_collection, name_collection_outgoing, n=2):
     """
-    I import from MongoDB here, take advantage of NetworkX to find n-bridges using
-    network theory approaches then export back to MongoDB for storage.
+    Function gets pairs from collection generated in get_pairs function. Function
+    then takes advantage of NetworkX to find n-bridges using network theory approaches.
+    Function then exports to another collection in MongoDB: a bridges collection.
 
-    :param n: 2-bridge, 3-bridge, 4-bridge, etc.
-    :param name_collection: The MongoDB collection to export data to.
+    :param query_database: Database in which Met-aromatic pairs are located.
+    :param query_collection: Collection in which Met-aromatic pairs are located.
+    :param name_collection_outgoing: The MongoDB collection to export data to.
+    :param n: 2-bridge, 3-bridge, 4-bridge, ..., n-bridge
     :return: Nothing. Function performs operation pass-by style.
     """
     if n < 2:
         exit("Incorrect bridge order. A bridge must be of n >= 2!")
     else:
+        # ensure duplicates are not being loaded
+        client[query_database][name_collection_outgoing].drop()
+
         bridges = []
-        for entry in list(db['pairs'].find()):
+        for entry in client[query_database][query_collection].find():
             pairs = []
             for pair in entry.get('pairs'):
                 pairs.append(tuple(pair.split('|')))  # 'TYR123|MET123' -> ('TYR123', 'MET123')
@@ -163,26 +158,22 @@ def get_bridges_from_pairs(n=2, name_collection='bridges'):
                     pass
 
         try:
-            db[name_collection].insert_many(bridges)
+            client[query_database][name_collection_outgoing].insert_many(bridges)
         except errors.BulkWriteError as pymongo_exception:
             print(pymongo_exception.details['writeErrors'])
         else:
-            print(' -- Collected all {}-bridges and exported to collection: bridges \n'.format(n))
+            print(' -- Collected all {}-bridges and exported to collection: {} \n'.format(n, name_collection_outgoing))
 
 
-def count_bridges(bridges):
+def count_bridges(query_database, query_collection):
     """
-    I get bridge counts here for visualization. Need to re-import bridges from
-    MongoDB and load into nested list prior to getting count.
+    Function gets bridges from MongoDB bridges collection generated by
+    get_bridges_from_pairs function and performs a count.
 
-    :param bridges: Data of form:
-    [
-        ["TYR203", "PHE151", "MET152"],
-        ["MET449", "TRP312", "PHE452"],
-        ["MET257", "PHE297", "PHE286"],
-        ...
-    ]
-    :return: A dict of form: {
+    :param query_database: Database in which bridges are located.
+    :param query_collection: Collection in which bridges are located.
+    :return: Count of bridges by type. A dict of form:
+    {
         PHE-PHE: 3,
         TYR-TYR: 0,
         TRP-TRP: 0,
@@ -191,6 +182,7 @@ def count_bridges(bridges):
         PHE-TRP: 1
     }
     """
+    bridges = [i.get('bridge') for i in client[query_database][query_collection].find()]
 
     # clean up data prior to count
     refined = []
@@ -216,10 +208,71 @@ def count_bridges(bridges):
     }
 
 
+def count_bridges_by_ec(query_database, query_collection):
+    """
+    Group by EC classifier and then count bridges. Custom Jeff Warren request.
+
+    :param query_database: Database in which bridges are located.
+    :param query_collection: Collection in which bridges are located.
+    :return: A dict of dicts for containing bridge counts grouped by EC codes.
+    """
+    bridges = [row for row in client[query_database][query_collection].find()]
+
+    # need to sort prior to grouping with itertools.groupby
+    key = lambda column: column['EC']
+    bridges.sort(key=key)
+
+    results = {}
+
+    for ec, bridge in groupby(bridges, key=key):
+        ec = '0' if ec == '' else ec  # replace '' with '0'
+        row, refined = [i.get('bridge') for i in list(bridge)], []
+        for r in row:
+            r.remove(*(amino_acid for amino_acid in r if "MET" in amino_acid))
+            refined.append(''.join([s for s in '-'.join(r) if not s.isdigit()]))
+
+        # actual counts
+        FF = refined.count('PHE-PHE')
+        YY = refined.count('TYR-TYR')
+        WW = refined.count('TRP-TRP')
+        YW = refined.count('TYR-TRP') + refined.count('TRP-TYR')
+        FY = refined.count('TYR-PHE') + refined.count('PHE-TYR')
+        FW = refined.count('PHE-TRP') + refined.count('TRP-PHE')
+
+        results[ec] = {
+            'PHE-PHE': FF,
+            'TYR-TYR': YY,
+            'TRP-TRP': WW,
+            'TYR-TRP': YW,
+            'PHE-TYR': FY,
+            'PHE-TRP': FW
+        }
+
+    return results
+
+
+# -------------------------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
-    count_entries()
-    breakdowns_by_order()
-    move_pairs()
-    get_bridges_from_pairs()
+    print(' -- Connected to MongoDB on:')
+    print(' -- Port: {}'.format(mongoport))
+    print(' -- Host: {}'.format(mongohost))
+    print(' -- Database: {}'.format(database))
+    print(' -- Collection: {}\n'.format(collection))
+    print(' -- Analyzing...\n')
+
+    count_entries(database, collection)
+    breakdowns_by_order(database, collection)
+    get_pairs(database, collection, 'pairs')
+    get_bridges_from_pairs(database, 'pairs', 'bridges')
+
+    print(" -- Bridges: ")
+    bridges_overall = count_bridges(database, 'bridges')
+    for k in bridges_overall:
+        print(' -- {} | {}'.format(k, bridges_overall.get(k)))
+    print()
+
+    print(count_bridges_by_ec(database, 'bridges'))
 
 client.close()
