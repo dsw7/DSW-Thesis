@@ -8,7 +8,7 @@ Script creates heatmap for all 2-bridges in MongoDB collection "non_redundant_no
 from numpy import arange
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
-rcParams['figure.dpi'] = 100
+rcParams['figure.dpi'] = 400
 
 # ------------------------------------------------------------------------------
 # data obtained from analyze.py
