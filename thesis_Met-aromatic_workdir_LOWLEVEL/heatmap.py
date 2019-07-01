@@ -1,6 +1,8 @@
 """
 Written by David S. Weber
 dsw7@sfu.ca
+
+Script creates heatmap for all 2-bridges in MongoDB collection "non_redundant_no_ang_limit"
 """
 
 from numpy import arange

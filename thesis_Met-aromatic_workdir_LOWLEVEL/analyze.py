@@ -1,7 +1,9 @@
 """
 dsw7@sfu.ca
-The analysis script that processes the results of the Met-aromatic algorithm
+The analysis script that processes the results of the Met-aromatic algorithm.
 """
+
+# TODO: create top level definitions for pairs, bridges collections
 
 # -------------------------------------------------------------------------------------------
 from pymongo import MongoClient, errors
@@ -13,7 +15,6 @@ mongoport = 27017
 mongohost = "localhost"
 database = "ma"
 collection = "non_redundant_no_ang_limit"
-bridge_order = 3
 client = MongoClient(mongohost, mongoport)
 
 
@@ -269,7 +270,7 @@ if __name__ == '__main__':
     count_entries(database, collection)
     breakdowns_by_order(database, collection)
     get_pairs(database, collection, 'pairs')
-    get_bridges_from_pairs(database, 'pairs', 'bridges', n=bridge_order)
+    get_bridges_from_pairs(database, 'pairs', 'bridges')
 
     print(" -- Bridges: ")
     bridges_overall = count_bridges(database, 'bridges')
