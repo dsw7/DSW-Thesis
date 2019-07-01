@@ -1,7 +1,9 @@
-### Met-aromatic LOW LEVEL routine
----
-A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description.  
+## Met-aromatic low level routine
+---  
+A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description. Met-aromatic data is first collected using ```runner.py``` which loads data into a MongoDB database. The script ```analyze.py``` runs a set of queries on the MongoDB database and returns meaningful data which can be redirected for storage.
 
+### Usage: runner.py
+---
 To run the program:
 ```
 $ python runner.py <args>
