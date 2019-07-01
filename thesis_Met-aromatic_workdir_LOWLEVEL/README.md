@@ -63,4 +63,4 @@ There's really little to this script. I literally copy pasted data from ```analy
 $ python heatmap.py
 ```
 Which yields:
-
+<img src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/2_bridges.png", align="center">
