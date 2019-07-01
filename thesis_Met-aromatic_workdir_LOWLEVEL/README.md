@@ -47,5 +47,12 @@ $ python runner.py --help
 
 ### Usage: analyze.py
 ---
-
+To run the script:
+```
+$ python analyze.py
+```
+Script interpretation will be terminated if data was not previously collected using ```runner.py```. Otherwise, data will be printed to the console. Output can be redirected to a file for storage:
+```
+$ python analyze.py > /path/to/results/results.txt
+```
 
