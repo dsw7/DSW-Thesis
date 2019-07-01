@@ -64,5 +64,5 @@ $ python heatmap.py
 ```
 Which yields:
 <p align="center">
-  <img width="350" height="300" src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/2_bridges.png">
+  <img width="320" height="300" src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/2_bridges.png">
 </p>
