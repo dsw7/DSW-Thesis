@@ -4,8 +4,6 @@ The analysis script that processes the results of the Met-aromatic algorithm
 """
 
 # -------------------------------------------------------------------------------------------
-# TODO: need to reorganize the three primary collections
-# TODO: remove argparsed arguments --
 from pymongo import MongoClient, errors
 from networkx import Graph, connected_components
 from itertools import groupby
@@ -14,7 +12,8 @@ from itertools import groupby
 mongoport = 27017
 mongohost = "localhost"
 database = "ma"
-collection = "ma"
+collection = "non_redundant_no_ang_limit"
+bridge_order = 3
 client = MongoClient(mongohost, mongoport)
 
 
@@ -255,24 +254,37 @@ def count_bridges_by_ec(query_database, query_collection):
 
 
 if __name__ == '__main__':
+    print(' =============')
+    print(' --- START ---')
+    print(' =============')
+    print('\n')
+
     print(' -- Connected to MongoDB on:')
     print(' -- Port: {}'.format(mongoport))
     print(' -- Host: {}'.format(mongohost))
     print(' -- Database: {}'.format(database))
-    print(' -- Collection: {}\n'.format(collection))
+    print(' -- Base collection: {}\n'.format(collection))
     print(' -- Analyzing...\n')
 
     count_entries(database, collection)
     breakdowns_by_order(database, collection)
     get_pairs(database, collection, 'pairs')
-    get_bridges_from_pairs(database, 'pairs', 'bridges')
+    get_bridges_from_pairs(database, 'pairs', 'bridges', n=bridge_order)
 
     print(" -- Bridges: ")
     bridges_overall = count_bridges(database, 'bridges')
     for k in bridges_overall:
         print(' -- {} | {}'.format(k, bridges_overall.get(k)))
-    print()
 
-    print(count_bridges_by_ec(database, 'bridges'))
+    print("\n -- Bridge counts by EC: ")
+    print(" -- EC | { counts }")
+    bridges_by_EC = count_bridges_by_ec(database, 'bridges')
+    for k in bridges_by_EC:
+        print(' --  {} | {}'.format(k, bridges_by_EC.get(k)))
+
+    print('\n')
+    print(' =============')
+    print(' ---- END ----')
+    print(' =============')
 
 client.close()
