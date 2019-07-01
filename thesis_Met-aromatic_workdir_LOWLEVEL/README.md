@@ -2,6 +2,19 @@
 ---  
 A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description. Met-aromatic data is first collected using ```runner.py``` which loads data into a MongoDB database. The script ```analyze.py``` runs a set of queries on the MongoDB database and returns meaningful data which can be redirected for storage. The script ```heatmap.py``` creates a heatmap representation of bridging interactions broken down by EC classifiers. This was a reviewer request.
 
+### Contents
+```
+./runner.py                       -- See above
+./analyze.py                      -- See above
+./heatmap.py                      -- See above
+./utils/filegetter.py             -- Fetches PDB files over ftp
+./utils/ma.py                     -- Contains Met-aromatic class
+./utils/utils.py                  -- Contains Met-aromatic helper functions
+./tests/utils_init/               -- Contains some of the first ever Met-aromatic implementations
+./tests/randomized_pdb_codes.csv  -- A .csv containing random PDB test codes
+./tests/test.py                   -- Unit tests executed here
+```
+
 ### Usage: runner.py
 ---
 To run the program:
