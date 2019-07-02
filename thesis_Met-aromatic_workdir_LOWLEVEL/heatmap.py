@@ -6,12 +6,17 @@ Script creates heatmap for all 2-bridges in MongoDB collection "non_redundant_no
 """
 
 from numpy import arange
-import matplotlib.pyplot as plt
+from pandas import DataFrame
+from matplotlib import pyplot as plt
 from matplotlib import rcParams
-rcParams['figure.dpi'] = 400
+rcParams['figure.dpi'] = 200
 
-# ------------------------------------------------------------------------------
-# data obtained from analyze.py
+NUM_COLS = 7
+NUM_ROWS = 8
+
+
+# ------------------------------------------------------------------------------------------------------
+# starting data from analyze.py
 
 data = {
     '0': {'PHE-PHE': 1952, 'TYR-TYR': 753, 'TRP-TRP': 172, 'TYR-TRP': 774, 'PHE-TYR': 2373, 'PHE-TRP': 1078},
@@ -23,45 +28,43 @@ data = {
     '6': {'PHE-PHE': 103, 'TYR-TYR': 50, 'TRP-TRP': 12, 'TYR-TRP': 31, 'PHE-TYR': 157, 'PHE-TRP': 56}
 }
 
-types = list(data.get('0').keys())
 
-# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------
+# preprocess data into dataframe
 
-# reshape data
-ECs = []
-counts = []
-for ec in data:
-    ECs.append(ec)
-    row_EC = data.get(ec)
-    row = []
-    for key in row_EC:
-        row.append(row_EC.get(key))
-    counts.append(row)
+df = DataFrame(data).transpose()
+df['Sums'] = df.sum(axis=1)
+colsum = DataFrame(df.sum(axis=0)).transpose()
+df = df.append(colsum)
+ECs = ['N/A'] + ['EC' + str(i) for i in range(1, 7)] + ['Sums']
+df.index = ECs
+
+
+# ------------------------------------------------------------------------------------------------------
+# plot
 
 fig, ax = plt.subplots(figsize=(4, 4))
-ax.imshow(counts, cmap='coolwarm')
-ax.set_xticks(arange(len(types)))
-ax.set_yticks(arange(len(ECs)))
-ax.set_xticklabels(types)
-ax.set_yticklabels(ECs)
-plt.setp(ax.get_xticklabels(), rotation=45, ha="right", va="center", rotation_mode="anchor")
+ax.imshow(df, cmap='coolwarm')
+ax.set_xticks(arange(len(df.columns)))
+ax.set_yticks(arange(len(df.index)))
+ax.set_xticklabels(df.columns)
+ax.set_yticklabels(df.index)
+ax.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)  # set bridge types to top
+plt.setp(ax.get_xticklabels(), rotation=45, ha="left", va="center", rotation_mode="anchor")  # rotate bridge types
+# plt.gca().set_frame_on(False)  # remove border
 
-# add white grid
-for line in range(0, len(types)):
-    plt.axvline(line - 0.5, lw=3, c='white')
-
-for line in range(0, len(data)):
-    plt.axhline(line - 0.5, lw=3, c='white')
-
-# remove border
-plt.gca().set_frame_on(False)
+# add grid lines
+for line in range(0, NUM_COLS): plt.axvline(line - 0.5, lw=3, c='white')
+for line in range(0, NUM_ROWS): plt.axhline(line - 0.5, lw=3, c='white')
+plt.axvline(NUM_COLS - 1.5, lw=1, c='k')
+plt.axhline(NUM_ROWS - 1.5, lw=1, c='k')
 
 # annotate pixels
-for i in range(len(ECs)):
-    for j in range(len(types)):
-        text = ax.text(j, i, counts[i][j], ha="center", va="center", color="k")
+for i in range(NUM_COLS):
+    for j in range(NUM_ROWS):
+        ax.text(i, j, df.iloc[j, i], ha="center", va="center", color="k", size=8)
 
-# show results
-fig.tight_layout()
+plt.tight_layout()
 plt.show()
+
 
