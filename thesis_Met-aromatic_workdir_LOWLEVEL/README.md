@@ -4,15 +4,16 @@ A low level object oriented package for running the Met-aromatic algorithm. See 
 
 ### Contents
 ```
-./runner.py                       -- See above
-./analyze.py                      -- See above
-./heatmap.py                      -- See above
-./utils/filegetter.py             -- Fetches PDB files over ftp
-./utils/ma.py                     -- Contains Met-aromatic class
-./utils/utils.py                  -- Contains Met-aromatic helper functions
-./tests/utils_init/               -- Contains some of the first ever Met-aromatic implementations
-./tests/randomized_pdb_codes.csv  -- A .csv containing random PDB test codes
-./tests/test.py                   -- Unit tests executed here
+./runner.py                              -- See above
+./analyze.py                             -- See above
+./heatmap.py                             -- See above
+./utils/filegetter.py                    -- Fetches PDB files over ftp
+./utils/ma.py                            -- Contains Met-aromatic class
+./utils/utils.py                         -- Contains Met-aromatic helper functions
+./utils/apply_angular_limit_to_no_ang.py -- Contains a method of applying angular limit to an existing MongoDB collection
+./tests/utils_init/                      -- Contains some of the first ever Met-aromatic implementations
+./tests/randomized_pdb_codes.csv         -- A .csv containing random PDB test codes
+./tests/test.py                          -- Unit tests executed here
 ```
 
 ### Usage: runner.py
