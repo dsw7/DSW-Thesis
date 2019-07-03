@@ -1,10 +1,13 @@
 """
 dsw7@sfu.ca
 The analysis script that processes the results of the Met-aromatic algorithm.
+Processes the collection:
+
+    -- ma.non_redundant_no_ang_limit
+
 """
 
 # TODO: create top level definitions for pairs, bridges collections
-# TODO: apply angular condition using new angular condition function
 
 # -------------------------------------------------------------------------------------------
 from pymongo import MongoClient, errors
@@ -250,46 +253,6 @@ def count_bridges_by_ec(query_database, query_collection):
         }
 
     return results
-
-
-def apply_angular_condition(query_database, name_collection_out, cutoff=109.5):
-    """
-    Function for applying angular condition to non_redundant_no_ang_limit collection. Recall that no angular
-    condition was applied to this collection during data mining.
-
-    :param query_database: Database in which Met-aromatic pairs are located
-    :param name_collection_out: The MongoDB collection to export data to
-    :param cutoff: Angular cutoff to apply to Met-theta / Met-phi
-    :return: A new collection where "result" field is a boolean indicating whether condition is true or false
-    """
-    query = [
-        {
-            "$project": {
-                "_id": 1,
-                "code": 1,
-                "aro": 1,
-                "arores": 1,
-                "met": 1,
-                "norm": 1,
-                "ec": 1,
-                "result": {
-                    "$or": [
-                        {
-                            "$lte": ["$met-theta", cutoff]
-                        },
-                        {
-                            "$lte": ["$met-phi", cutoff]
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "$out": name_collection_out
-        }
-    ]
-
-    client[query_database]['non_redundant_no_ang_limit'].aggregate(query)
 
 
 # -------------------------------------------------------------------------------------------
