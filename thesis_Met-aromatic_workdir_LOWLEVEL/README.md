@@ -7,6 +7,7 @@ A low level object oriented package for running the Met-aromatic algorithm. See 
 ./runner.py                              -- See above
 ./analyze.py                             -- See above
 ./heatmap.py                             -- See above
+./low_redundancy_delimiter_list.txt      -- Delimiter list of PDB codes used in bridging interaction study
 ./utils/filegetter.py                    -- Fetches PDB files over ftp
 ./utils/ma.py                            -- Contains Met-aromatic class
 ./utils/utils.py                         -- Contains Met-aromatic helper functions
@@ -28,7 +29,7 @@ $ python runner.py --code 1rcy
 ```
 A batch job can be performed as follows:
 ```
-$ python runner.py --batch /path/to/foo.txt
+$ python runner.py --batch /path/to/low_redundancy_delimiter_list.txt
 ```
 The PDB codes in the batch job text file should be separated by newline characters. *NOTE:* Both code and batch parameters cannot be passed simultaneously. Next come the Met-aromatic algorithm constraints:
 ```
