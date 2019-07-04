@@ -73,15 +73,15 @@ $ python analyze.py > /path/to/results/results.txt
 
 ### Usage: heatmap.py
 ---
-There's really little to this script. I literally copy pasted data from ```analyze.py``` into this script.
+There's really little to this script. I literally copy pasted data from ```analyze.py``` into this script. To run:
 ```
 $ python heatmap.py
 ```
-Which yields:
+Which yields (no angular cutoff applied):
 <p align="center">
   <img width="420" height="400" src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/figures/no_angular_cutoff.png">
 </p>
-And:
+And (109.5 degree angular cutoff applied):
 <p align="center">
   <img width="420" height="400" src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/figures/1095_angular_cutoff.png">
 </p>
