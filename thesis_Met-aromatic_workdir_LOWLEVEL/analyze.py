@@ -1,13 +1,21 @@
 """
 dsw7@sfu.ca
 The analysis script that processes the results of the Met-aromatic algorithm.
-Processes the collection:
+I used this script to process:
 
     -- ma.non_redundant_no_ang_limit
+    -- ma.non_redundant_1095_ang_limit
+
+And generate:
+
+    -- ma.bridges_1095_ang_limit
+    -- ma.bridges_no_ang_limit
+    -- ma.non_redundant_1095_ang_limit
+    -- ma.non_redundant_no_ang_limit
+    -- ma.pairs_1095_ang_limit
+    -- ma.pairs_no_ang_limit
 
 """
-
-# TODO: create top level definitions for pairs, bridges collections
 
 # -------------------------------------------------------------------------------------------
 from pymongo import MongoClient, errors
@@ -15,10 +23,17 @@ from networkx import Graph, connected_components
 from itertools import groupby
 
 # -------------------------------------------------------------------------------------------
+# manually input database and collection names
+
+database = "ma"
+collection = "non_redundant_1095_ang_limit"  # "non_redundant_no_ang_limit"
+collection_pairs = "pairs_1095_ang_limit"  # "pairs_no_ang_limit"
+collection_bridges = "bridges_1095_ang_limit"  # "bridges_no_ang_limit"
+
+
+# -------------------------------------------------------------------------------------------
 mongoport = 27017
 mongohost = "localhost"
-database = "ma"
-collection = "non_redundant_no_ang_limit"
 client = MongoClient(mongohost, mongoport)
 
 
@@ -268,22 +283,24 @@ if __name__ == '__main__':
     print(' -- Port: {}'.format(mongoport))
     print(' -- Host: {}'.format(mongohost))
     print(' -- Database: {}'.format(database))
-    print(' -- Base collection: {}\n'.format(collection))
+    print(' -- Base collection: {}'.format(collection))
+    print(' -- Met-aromatic pairs collection: {}'.format(collection_pairs))
+    print(' -- Bridges collection: {}\n'.format(collection_bridges))
     print(' -- Analyzing...\n')
 
     count_entries(database, collection)
     breakdowns_by_order(database, collection)
-    get_pairs(database, collection, 'pairs')
-    get_bridges_from_pairs(database, 'pairs', 'bridges')
+    get_pairs(database, collection, collection_pairs)
+    get_bridges_from_pairs(database, collection_pairs, collection_bridges)
 
     print(" -- Bridges: ")
-    bridges_overall = count_bridges(database, 'bridges')
+    bridges_overall = count_bridges(database, collection_bridges)
     for k in bridges_overall:
         print(' -- {} | {}'.format(k, bridges_overall.get(k)))
 
     print("\n -- Bridge counts by EC: ")
     print(" -- EC | { counts }")
-    bridges_by_EC = count_bridges_by_ec(database, 'bridges')
+    bridges_by_EC = count_bridges_by_ec(database, collection_bridges)
     for k in bridges_by_EC:
         print(' --  {} | {}'.format(k, bridges_by_EC.get(k)))
 
