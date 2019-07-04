@@ -15,6 +15,8 @@ A low level object oriented package for running the Met-aromatic algorithm. See 
 ./tests/utils_init/                      -- Contains some of the first ever Met-aromatic implementations
 ./tests/randomized_pdb_codes.csv         -- A .csv containing random PDB test codes
 ./tests/test.py                          -- Unit tests executed here
+./figures/no_angular_cutoff.png          -- Figure obtained from heatmap.png - no angular cutoff applied to starting data
+./figures/1095_angular_cutoff.png        -- Figure obtained from heatmap.png - 109.5 degree cutoff applied to starting data
 ```
 
 ### Usage: runner.py
