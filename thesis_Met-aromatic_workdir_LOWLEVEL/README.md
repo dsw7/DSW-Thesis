@@ -1,13 +1,11 @@
-## Met-aromatic low level routine + bridging interactions
+## Met-aromatic low level routine
 ---  
-A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description. Met-aromatic data is first collected using ```runner.py``` which loads data into a MongoDB database. The script ```analyze.py``` runs a set of queries on the MongoDB database and returns meaningful data which can be redirected for storage. The script ```heatmap.py``` creates a heatmap representation of bridging interactions broken down by EC classifiers. This was a reviewer request.
+A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description.
 
 ### Contents
 ```
 ./runner.py                              -- See above
-./analyze.py                             -- See above
-./heatmap.py                             -- See above
-./low_redundancy_delimiter_list.txt      -- Delimiter list of PDB codes used in bridging interaction study
+./delimiter.txt                          -- Delimiter list of PDB codes used in bridging interaction study
 ./utils/filegetter.py                    -- Fetches PDB files over ftp
 ./utils/ma.py                            -- Contains Met-aromatic class
 ./utils/utils.py                         -- Contains Met-aromatic helper functions
@@ -15,8 +13,6 @@ A low level object oriented package for running the Met-aromatic algorithm. See 
 ./tests/utils_init/                      -- Contains some of the first ever Met-aromatic implementations
 ./tests/randomized_pdb_codes.csv         -- A .csv containing random PDB test codes
 ./tests/test.py                          -- Unit tests executed here
-./figures/no_angular_cutoff.png          -- Figure obtained from heatmap.png - no angular cutoff applied to starting data
-./figures/1095_angular_cutoff.png        -- Figure obtained from heatmap.png - 109.5 degree cutoff applied to starting data
 ```
 
 ### Usage: runner.py
@@ -31,7 +27,7 @@ $ python runner.py --code 1rcy
 ```
 A batch job can be performed as follows:
 ```
-$ python runner.py --batch /path/to/low_redundancy_delimiter_list.txt
+$ python runner.py --batch /path/to/delimiter.txt
 ```
 The PDB codes in the batch job text file should be separated by newline characters. *NOTE:* Both code and batch parameters cannot be passed simultaneously. Next come the Met-aromatic algorithm constraints:
 ```
@@ -61,30 +57,4 @@ Default MongoDB parameters are passed if no export parameters are specified. No 
 ```
 $ python runner.py --help
 ```
-
-### Usage: analyze.py
----
-To run the script:
-```
-$ python analyze.py
-```
-Script interpretation will be terminated if data was not previously collected using ```runner.py```. Otherwise, data will be printed to the console. Output can be redirected to a file for storage:
-```
-$ python analyze.py > /path/to/results/results.txt
-```
-
-### Usage: heatmap.py
----
-There's really little to this script. I literally copy pasted data from ```analyze.py``` into this script. To run:
-```
-$ python heatmap.py
-```
-Which yields (no angular cutoff applied):
-<p align="center">
-  <img width="420" height="400" src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/figures/no_angular_cutoff.png">
-</p>
-And (109.5 degree angular cutoff applied):
-<p align="center">
-  <img width="420" height="400" src="https://github.com/dsw7/DSW-Thesis/blob/master/thesis_Met-aromatic_workdir_LOWLEVEL/figures/1095_angular_cutoff.png">
-</p>
 
