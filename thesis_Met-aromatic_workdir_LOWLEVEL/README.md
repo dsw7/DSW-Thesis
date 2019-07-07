@@ -1,6 +1,6 @@
 ## Met-aromatic low level routine
 ---  
-A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description.
+A low level object oriented package for running the Met-aromatic algorithm. See DSW thesis for a theoretical description. **The export csv method will be deprecated.**
 
 ### Contents
 ```
