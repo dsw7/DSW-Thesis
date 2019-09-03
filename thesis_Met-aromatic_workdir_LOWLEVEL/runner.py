@@ -6,11 +6,11 @@ The "main" script that accepts PDB code input from user.
 import os
 from sys import path; path.append("utils")
 from ma import MetAromatic
-from pprint import pprint
 from argparse import ArgumentParser, RawTextHelpFormatter
 from pymongo import MongoClient
 from hashlib import md5
 from time import time
+from pandas import DataFrame
 
 COLUMNS = ["ARO", "ARO POS", "MET", "MET POS", "NORM", "MET-THETA", "MET-PHI"]
 DEFAULT_PORT = 27017
@@ -132,6 +132,16 @@ def mapper(result, pdbcode):
     return outgoing
 
 
+def pandas_print(data):
+    # I print a pandas dataframe of the data to prompt if verbose set to true
+    # not super efficient but very readable
+    df = DataFrame(data)
+    df = df.sort_values(by='norm')
+    df = df.reset_index(drop=True)
+    df = df.reindex(sorted(df.columns), axis=1)
+    print(df)
+
+
 def print_progress(pdbcode, current_count, overall_count):
     percent = round(current_count * 100 / overall_count, 2)
     msg = '{}. Iteration {} out of {}. {} % complete.'.format(pdbcode, current_count, overall_count, percent)
@@ -149,17 +159,16 @@ if __name__ == '__main__':
 
     if (code != '0') and (path == '0'):  # user inputs a valid pdb code but no path to batch file
         results = run_met_aromatic(code)
-
         if results is None:
             print('NoneType object was returned from MetAromatic algorithm.')
         elif not results[0]:
             print('No interactions.')
         else:
+            results = mapper(results, code)
             if verbose:
-                pprint(mapper(results, code))
-
+                pandas_print(results)
             if export_mongo:
-                col.insert_many(mapper(results, code))
+                col.insert_many(results)
             # TODO: else export to csv... might remove this -> .csvs are really not a good way to work with data
 
     elif (code == '0') and (path != '0'):  # user inputs no pdb code but valid path to batch file
@@ -169,21 +178,19 @@ if __name__ == '__main__':
             pdb_codes = read_pdb_code_txt_file(path)
             overall = len(pdb_codes)
             start = time()
-
         for u, code in enumerate(pdb_codes, 1):
             print_progress(code, u, overall)
             results = run_met_aromatic(code)
-
             if results is None:
                 print('NoneType object was returned from MetAromatic algorithm.')
             elif not results[0]:
                 continue
             else:
+                results = mapper(results, code)
                 if verbose:
-                    pprint(mapper(results, code))
-
+                    pandas_print(results)
                 if export_mongo:
-                    col.insert_many(mapper(results, code))
+                    col.insert_many(results)
                 # TODO: else export to csv...
 
         print('\n' + '-' * 50)

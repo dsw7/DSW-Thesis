@@ -1,5 +1,6 @@
 from ma import MetAromatic
 from pandas import DataFrame, read_csv, testing
+import pytest
 
 
 CUTOFF = 4.9
@@ -7,11 +8,12 @@ ANGLE = 109.5
 CHAIN = 'A'
 COLUMNS = ['ARO', 'ARO RES', 'MET', 'MET RES', 'NORM', 'MET-THETA', 'MET-PHI']
 NAMES_CSV = ['ARO', 'ARO RES', 'MET', 'MET RES', 'MET-PHI', 'MET-THETA', 'NORM', 'PDBCODE']
-DF_FULL = read_csv('./483OutputA3-3-M-Benchmark.csv', names=NAMES_CSV)
+control = read_csv('./483OutputA3-3-M-Benchmark.csv', names=NAMES_CSV)
+codes_test = set(control.PDBCODE)
 
 
 def get_control_dataset(code):
-    df_control = DF_FULL[DF_FULL.PDBCODE == code]
+    df_control = control[control.PDBCODE == code]
     df_control = df_control.drop(['PDBCODE'], axis=1)
     df_control = df_control.reindex(sorted(df_control.columns), axis=1)
     df_control = df_control.sort_values(by='NORM')
@@ -29,17 +31,15 @@ def get_test_dataset(code):
     return df_test
     
 
-def test_equality():
-    for code in set(DF_FULL.PDBCODE):
-        print(code)
-        # for code in df_full.PDBCODE.sample(SAMPLE_SIZE):
-        df_control = get_control_dataset(code=code)
-        df_test = get_test_dataset(code=code)
-        print(df_control)
-        print(df_test)
-        testing.assert_frame_equal(df_test, df_control)
-   
+@pytest.mark.parametrize("code", codes_test)
+def test_eval(code):
+    df_control = get_control_dataset(code=code)
+    df_test = get_test_dataset(code=code)
+    testing.assert_frame_equal(df_control, df_test)
 
+
+# run manually
 if __name__ == '__main__':
-    test_equality()
-
+    code = '6dbp'
+    print('2016: \n', get_control_dataset(code))
+    print('Today: \n', get_test_dataset(code))
