@@ -7,7 +7,6 @@ All code written by David Weber as part of his M.Sc. graduate work.
 
     ~/DSW-Thesis/thesis_Bridging_workdir/                // contains high level Met-aromatic implementation for getting bridges
     ~/DSW-Thesis/thesis_Chain_comparator/                // contains all code for assessing bridge / aromatic chain superimposition
-    ~/DSW-Thesis/thesis_Met-aromatic_workdir_LOWLEVEL    // contains a lower level implementation of Met-aromatic algorithm
     ~/DSW-Thesis/thesis_Met-aromatic_workdir_HIGHLEVEL   // contains a high level Pandas/BioPython Met-aromatic algorithm implementation
     ~/DSW-Thesis/thesis_Met-aromatic_cplusplus           // contains a very basic C++ implementation of Met-aromatic algorithm
     ~/DSW-Thesis/thesis_PDB_to_DFT                       // contains workflow for translating DMS approx. relative to aromatic plane + DFT
@@ -17,8 +16,11 @@ All code written by David Weber as part of his M.Sc. graduate work.
     ~/DSW-Thesis/PyOpenGL_MetAromatic_Animation          // contains a PyOpenGL/pygame animation of the Met-aromatic algorithm
     ~/DSW-Thesis/legacy_Chain_comparator.tar             // legacy work for chain membership study of 2,611 structures*
     ~/DSW-Thesis/legacy_Chain_comparator_2.tar           // legacy work for chain membership study of entire PDB*
-
     *These legacy directories may be removed in 2019 as this study was done multiple times
+
+The following was transported out to the new repository: MetAromaticEngine
+
+    ~/DSW-Thesis/thesis_Met-aromatic_workdir_LOWLEVEL    // contains a lower level implementation of Met-aromatic algorithm
 
 ---   
 ## Chain comparator sequence of events:
