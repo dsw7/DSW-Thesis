@@ -18,7 +18,7 @@ All code written by David Weber as part of his M.Sc. graduate work.
     ~/DSW-Thesis/legacy_Chain_comparator_2.tar           // legacy work for chain membership study of entire PDB*
     *These legacy directories may be removed in 2019 as this study was done multiple times
 
-The following was transported out to the new repository: MetAromaticEngine
+The following was transported out to the new repository: https://github.com/dsw7/MetAromaticEngine
 
     ~/DSW-Thesis/thesis_Met-aromatic_workdir_LOWLEVEL    // contains a lower level implementation of Met-aromatic algorithm
 
