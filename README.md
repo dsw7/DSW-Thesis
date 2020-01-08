@@ -15,7 +15,7 @@ All code written by David Weber as part of his M.Sc. graduate work.
     ~/DSW-Thesis/xyz_file_generator.py                   // contains a homemade .xyz file generator
     ~/DSW-Thesis/PyOpenGL_MetAromatic_Animation          // contains a PyOpenGL/pygame animation of the Met-aromatic algorithm
 
-The following was transported out to the new repository: https://github.com/dsw7/MetAromaticEngine
+The following was transported out to the new repository: https://github.com/dsw7/MetAromatic
 
     ~/DSW-Thesis/thesis_Met-aromatic_workdir_LOWLEVEL    // contains a lower level implementation of Met-aromatic algorithm
 ---   
