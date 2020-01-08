@@ -39,4 +39,4 @@ one step further: here we compute the bridging interaction.
     30  PHE  125  122     3
     34  TYR  118  122     3
 ```    
-1. BRDG returns how many aromatic residues meet Met-aromatic criteria relative to a methionine residue MET.
+BRDG returns how many aromatic residues meet Met-aromatic criteria relative to a methionine residue MET.
