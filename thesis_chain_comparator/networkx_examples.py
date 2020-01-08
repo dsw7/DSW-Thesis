@@ -105,4 +105,3 @@ NULLITY = DIM - RANK
 
 D = diag(A1 * A2)
 print('Pseudomembership: ', D, 'Nullity: ', NULLITY)
-
