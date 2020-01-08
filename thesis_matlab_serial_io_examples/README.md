@@ -5,7 +5,7 @@ In this folder, I place examples of all scripts for connecting to and disconnect
 used for the Warren lab laser table. I have made every effort to ensure
 all scripts are written according to the documentation for their respective hardware.
 I have also made sure that all scripts work standalone such that future lab members
-can replicate their execution.
+can replicate their use.
 </p>
 
     ~/thesis_SerialIO/serial_CompuScope.m   // scope
