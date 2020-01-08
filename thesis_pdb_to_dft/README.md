@@ -7,7 +7,7 @@ gets an aromatic interaction of choosing from the PDB. A homogeneous transformat
 is then used to increment the position of a dimethyl sulfide molecule (approximation for the
 methionine CE-SD-CG moiety) along a vector normal to the aromatic plane. Here we can force
 the DMS molecule closer or further away from the aromatic ring. These translations are then
-exported using a homemade ```.xyz``` file generator for rendering hydrogens in Avogadro. Then a Python
+exported using a homemade '.xyz' file generator for rendering hydrogens in Avogadro. Then a Python
 script writes homemade `.inp` files for ORCA. The most interesting part is that there
 is a script that writes code, "code that writes code", in a process analogous to a computer virus.
 The Python script writes a shell script for the execution of DFT calculations using the premade
