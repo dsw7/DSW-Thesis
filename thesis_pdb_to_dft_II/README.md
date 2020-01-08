@@ -5,7 +5,7 @@
 
 This directory is almost equivalent to:
 
-    ~/DSW-Thesis/thesis_PDB_to_DFT
+    ~/DSW-Thesis/thesis_pdb_to_dft
   
 <p begin="justify">
 Except here I am not pulling a Met-aromatic interaction from PDB and
