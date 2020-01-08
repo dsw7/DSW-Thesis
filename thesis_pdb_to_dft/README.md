@@ -46,7 +46,7 @@ Simply run the script. The shell script `inp_to_out.sh` will be located in:
 Run the shell script. To do so, open up cmd or terminal, depending on OS, then `cd` into `orca_workdir`.
 For me, it is:  
     
-    $ cd ~/Desktop/thesis_PDB_to_DFT/orca_workdir
+    $ cd ~/thesis_pdb_to_dft/orca_workdir
 
 Then type:   
 
@@ -68,7 +68,6 @@ Use `get_energies.py` to generate a plot for the translation series. The x-axis 
 
 I highly recommend completely clearing `~/thesis_pdb_to_dft/orca_workdir` as soon as the experiment is done.
 This folder will get filled with lots of crap and fast.
-
 
 ---   
 ## Other notes:  
