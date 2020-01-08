@@ -1,6 +1,6 @@
 # DSW-Thesis   
 
-All code written by David Weber as part of his M.Sc. graduate work.  
+Note that a significant portion of this code has been reworked into: https://github.com/dsw7/MetAromatic
 
 ---   
 ## Description of directories:
@@ -13,8 +13,4 @@ All code written by David Weber as part of his M.Sc. graduate work.
     ~/DSW-Thesis/thesis_serial_io_examples               // contains example MATLAB code for Warren Lab laser hardware serial communication
     ~/DSW-Thesis/thesis_pdb_to_dft_II                    // second workflow for computing Morse surfaces as a function of ||v||, Met-theta angle
     ~/DSW-Thesis/pyopengl_met_aromatic_animation         // contains a PyOpenGL/pygame animation of the Met-aromatic algorithm
-
-The following was transported out to the new repository: https://github.com/dsw7/MetAromatic
-
-    ~/DSW-Thesis/thesis_Met-aromatic_workdir_LOWLEVEL    // contains a lower level implementation of Met-aromatic algorithm
 ---   
